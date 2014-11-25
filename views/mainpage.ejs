@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>TwitS</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+
+    <style type="text/css">
+    .circle {
+        fill: #6495ED;
+        stroke: #fff;
+    }
+    .root_circle {
+        fill: #4169E1;
+        stroke: #fff;
+    }
+    .link {
+        fill: black;
+        stroke: #777;
+    }
+    div.tooltip {
+        position: absolute;
+        text-align: center;
+        width: 130px;
+        height: 80px;
+        padding: 2px;
+        font: 12px sans-serif;
+        background: "lightsteelblue";
+        border: 0px;
+        border-radius: 8px;
+     /*  pointer-events: none;  This line needs to be removed */
+    }
+        #loading {
+        width: 100px; /* gif画像の幅 */
+        height: 100px; /* gif画像の高さ */
+        margin: -75px 0 0 -75px; /* gif画像を画面中央に */
+        padding: 20px; /* gif画像を大きく */
+        background: #BABABA; /* gif画像の背景色 */
+        opacity: 0.9; /* 透過させる */
+        border-radius: 15px; /* 丸角 */
+        position: fixed; /* gif画像をスクロールさせない */
+        left: 50%; /* gif画像を画面横中央へ */
+        top: 50%; /* gif画像を画面縦中央へ */
+    }
+    </style>
+</head>
+<body>
+    <h1></h1>
+    <table height="600" width="1250" border="1">
+        <tr>
+            <td width="300" valign="top">
+                <table>
+                    <tr>
+                        <form>
+                            <input id="search_user" type="text" name="user_id" value=""/>
+                            <input id="search_submit" type="submit" src=" ./image/search1.jpg" height="30"align="top" value="search"/><!--imageもしたい-->
+                        </form><br>
+                    </tr>
+                    <tr>
+                        <p>Selected Accounts</p>
+                        <div id="accounts"></div>
+                        <a id="make_list" href="#">Make List</a>
+                    </tr>
+
+                </table>
+            </td>
+            <td width="1200" id="canvas">
+            </td><!--ここにsvgをはりつける-->
+        </tr>
+    </table>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="/javascripts/d3.js"></script>
+<script type="text/javascript" src="/javascripts/makelist.js"></script>
+
+<!--ここからがd3-->
+<script type="text/javascript">
+var target = [];
+var width = 900;
+var height = 900;
+//var links = {};
+
+// Define 'div' for tooltips
+var div = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+//Defining the SVG canvas
+var svg = d3.select("#canvas").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
+
+    svg.selectAll("*").remove();
+
+    var nodes = {};//nodesを初期化
+    //Defining nodes
+    links.forEach(function(link){
+        if(!(link.source in nodes)) {
+            nodes[link.source] = {name: link.source};
+            link.source = nodes[link.source];
+        } else {
+            link.source = nodes[link.source];
+        }
+        link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+    });
+
+    var force = d3.layout.force()
+        .nodes(d3.values(nodes))
+        .links(links)
+        .size([700, 600])
+        .linkDistance([100])
+        .linkStrength(0.9)//反発力最大(0~1)
+        .friction(0.9)
+        .gravity(0.1)
+        .charge([-1500])
+        .on("tick", tick)
+        .start();
+
+    var drag = force.drag()
+        .on("dragstart", dragstart);
+
+    var line = svg.selectAll('.link')
+        .data(force.links())
+        .enter()
+        .append('line')
+        .attr('class', "link")
+        .attr("stroke-width", function(d){
+            //console.log(d);
+            //return d.target.weight;
+            return 1;
+        });
+
+    var node = svg.selectAll('.node')
+        .data(force.nodes())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .call(force.drag);
+
+    node.append("circle")
+        .attr('data-target', function(d){
+            return d.name;
+        })
+        .attr("class", function(d){
+            if(d.index == 0 ){//rootの最初の一個
+                return "root_circle";
+            }else{
+                return "circle";
+            }
+        })
+        .attr("r", function(d){
+            if(d.index == 0 ){
+                return 20; // "d.index:0" means the root user.
+            }else{
+                return 10;
+            }
+        })
+        .on("click", function(d){///////////////////////////ADDED!!!!!!!
+            var flg = 0;
+            var dflg = -1;
+            var account_html = "";
+            for(var i = 0; i < target.length; i++){
+                if(d.name == target[i]){
+                    flg = 1;
+                    dflg = i;
+                }
+            }
+            if(target.length == 3 && dflg == -1){
+                flg = 2;
+                alert("指定するのは3人までにして欲しぃな...//");//アニメーションで出したらかっこいい
+            }
+            if(flg == 0){ //flg[0:target内に存在しない][1:target内に存在][2:4人目以上]
+                d3.select(this).style("fill", "#4169E1");
+                target.push(d.name);
+            }else if(flg == 1){
+                d3.select(this).style("fill", "#6495ED");
+                target.splice(dflg, 1);
+            }
+            //今度はselectedAccounts用にhtmlを作成
+            if(target[0]){
+                for(var i = 0; i < target.length; i++){
+                    account_html += "<p>@"+ target[i]+"</p>";
+                }
+            }
+            d3.select("#accounts").html(account_html);
+            //console.log(target);
+
+        });//一旦ツールチップ消します
+        // .on("mouseover", function(d) {
+        //     div.transition()
+        //         .duration(500)
+        //         .style("opacity", 0);
+        //     div.transition()
+        //         .duration(200)
+        //         .style("opacity", .9);
+        //     div.html("<p>@"+d.name+"<br>"
+        //                 +"bio : "+ "hoge for bio"+"</p>")
+        //         .style("left", (d3.event.pageX-15) + "px")
+        //         .style("top", (d3.event.pageY-90) + "px");
+        // })
+        // .on("mouseout",function(d){
+        //     div.html("<p></p>")
+        //         .style("left", (d3.event.pageX-15) + "px")
+        //         .style("top", (d3.event.pageY-90) + "px");
+        // });
+
+    node.append("text")
+        .attr("x", 10)
+        .attr("dy", 10)
+        .attr("fill", "black")
+        .attr("font", "10px san-serif")
+        .text(function(d) {
+            return "@" + d.name;
+        });
+
+    // node.append("image")//Twitterにおいて重要な情報はなんといってもアイコンである
+    //     .attr({
+    //     'xlink:href': function (d) { return 'http://pbs.twimg.com/profile_images/2271138838/xa8s10w00lxh93apv936_normal.png'; },
+    //     'width': 30,
+    //     'height': 30
+    //     });
+
+    d3.select("#loading").remove();
+
+
+    function tick(e){ //rootノードをcenterに持ってくるために面倒なコードになっている
+        node.attr("transform", function(d) {
+            if(d.index==0 ){
+                damper = 0.1;
+                d.x = d.x + (width/2 - d.x) * (damper + 0.71) * e.alpha;
+                d.y = d.y + (height/2 - d.y) * (damper + 0.71) * e.alpha;
+            }
+            if(d.start === true){
+                d.x = width/2;
+                d.y = height/2;
+                d.start = false;
+            }
+            r = d.name.length;
+            d.x = Math.max(r, Math.min(width - r, d.x));
+            d.y = Math.max(r, Math.min(height - r, d.y));
+
+            return "translate("+d.x+","+d.y+")";
+        });
+        line.attr({
+            'x1': function (d) { return d.source.x; },
+            'y1': function (d) { return d.source.y; },
+            'x2': function (d) { return d.target.x; },
+            'y2': function (d) { return d.target.y; }
+        });
+    }
+
+    return callback();
+}
+
+
+function dragstart(d) {
+    //一旦固定外します
+    //d3.select(this).classed("fixed", d.fixed = true);
+}
+
+    </script>
+</body>
+</html>
