@@ -60,7 +60,7 @@
                     <tr>
                         <p>Selected Accounts</p>
                         <div id="accounts"></div>
-                        <a id="make_list" href="#">Make List</a>
+                        <a id="make_list" href="#prof_detail">Make List</a>
                     </tr>
 
                 </table>
@@ -69,6 +69,8 @@
             </td><!--ここにsvgをはりつける-->
         </tr>
     </table>
+    <div id="profile_detail">a</div>
+    <a id="scroll_top">ページTopへ</a>
 <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/javascripts/d3.js"></script>
@@ -76,7 +78,6 @@
 
 <!--ここからがd3-->
 <script type="text/javascript">
-var target = [];
 var width = 900;
 var height = 900;
 //var links = {};
@@ -95,7 +96,10 @@ var svg = d3.select("#canvas").append("svg")
 function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
 
     svg.selectAll("*").remove();
-
+    d3.select("#prof_table").remove();//検索時にもdetailも消す
+    //二人目を検索したときにtargetの中身とhtmlがおかしくならないように
+    target = [];
+    d3.select("#accounts").html("");
     var nodes = {};//nodesを初期化
     //Defining nodes
     links.forEach(function(link){
@@ -256,6 +260,52 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     return callback();
 }
 
+
+//////////ここからfind common friendsの処理にしようとしたけどmake_listでうまく取得できないんだけど
+function prof_detail_html(){
+    d3.select("#prof_table").remove();
+    var prof_table = d3.select("#profile_detail")
+        .append("table")
+        .attr("id", "prof_table")
+        .attr("width", width)
+        .attr("height", height);
+
+    // //hogeObj.forEach()???
+    // var table_html = "";
+    // for(var i = 0; i < hogeArr.length; i++){
+    //     if( i%5 == 0){
+    //         table_html += "<tr>";
+    //     }
+    //     table_html += "<td>";
+
+    //     table_html += "</td>";
+    //     if( i%5 == 0){
+    //         prof_html += "</tr>";
+    //     }
+    // }
+}
+
+function make_profcard(data){ //ここで作成するcardを七並べみたいに並べていく感じかと思った
+    var prof_html;
+    prof_html += "<div class=\"prf-card-inner\">";
+    prof_html += "<a class=\"js-action-url\" target=\"_blank\" href=\"https://twitter.com/"+data.screen_name + ">";
+    prof_html +=     "<span class=\"prf-img\">";
+    prof_html +=         "<img class=\"avatar\" src=\""+ data.img_url +"></img>";
+    prof_html +=     "</span>";
+    prof_html +=     "<strong class=\"fullname\">";
+    prof_html +=         data.name;
+    prof_html +=     "</strong>";
+    prof_html +=     "<p class=\"username\">";
+    prof_html +=         "@" + data.screen_name;
+    prof_html +=     "</p>";
+    prof_html += "</a>";
+    prof_html += "<p class=\"prf-bio\">";
+    prof_html +=     data.bio;
+    prof_html += "</p>";
+    prof_html += "</div>";
+    return prof_html;
+}
+//////////////////////////
 
 function dragstart(d) {
     //一旦固定外します

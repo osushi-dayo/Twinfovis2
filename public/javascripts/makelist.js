@@ -1,5 +1,6 @@
 $(function(){
     //var socket = io.connect('http://192.168.33.10');
+    var target = [];
     var socket = io();
 
     var copiedLinks = [];//どんどんターゲットとソースのデータが追加されていくlinksとは別の実体
@@ -15,9 +16,19 @@ $(function(){
         return e.preventDefault();//ページ更新しないsubmitじゃなくてただのボタンでも良い
     });
     $("#make_list").click(function(e){
-        socket.emit('search friernds',target);
-        console.log(target);
-        return e.preventDefault();
+        // socket.emit('search friernds',target);
+        // console.log(target);
+        // return e.preventDefault();
+
+        //ここで画面下にhtml(detail)を追加したい
+        prof_detail_html();
+        //新しく表示したページ下まで自動スクロール
+        var target = $('html, body');
+        target.animate({ scrollTop: 980 }, { duration: 2000, easing: 'swing', });
+    });
+    $("#scroll_top").click(function(e){
+        var target = $('html, body');
+        target.animate({ scrollTop: 0 }, "slow");
     });
 
 
