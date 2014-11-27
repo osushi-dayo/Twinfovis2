@@ -230,8 +230,10 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
 
     d3.select("#loading").remove();
 
-
     function tick(e){ //rootノードをcenterに持ってくるために面倒なコードになっている
+
+
+
         node.attr("transform", function(d) {
             if(d.index==0 ){
                 damper = 0.1;

@@ -15,16 +15,19 @@ $(function(){
         return e.preventDefault();//ページ更新しないsubmitじゃなくてただのボタンでも良い
     });
     $("#make_list").click(function(e){
-        // socket.emit('search friernds',target);
-         console.log(target);
-        // return e.preventDefault();
+        socket.emit('search friernds',target);
+        console.log(target);
 
         //ここで画面下にhtml(detail)を追加したい
         prof_detail_html();
         //新しく表示したページ下まで自動スクロール
         var target_scroll = $('html, body');
         target_scroll.animate({ scrollTop: 980 }, { duration: 2000, easing: 'swing', });
+
+        return e.preventDefault();
     });
+
+
     $("#scroll_top").click(function(e){
         var target_scroll = $('html, body');
         target_scroll.animate({ scrollTop: 0 }, "slow");

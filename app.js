@@ -178,7 +178,9 @@ io.on('connection', function (socket) {
 
     socket.on("search friernds",function(data){
         searchCommonFriends(data,function(d){//dはname,screen_name,bioの配列
+            console.dir(d);
             socket.emit("Frirends response",d);
+
         });
     });
 
@@ -291,9 +293,11 @@ function searchCommonFriends(target, callback){
 
                     for(var l = 0; l < friendsObjects.length; l++){
                         friendsArray.push({
+                            image_url: friendsObjects[l].profile_image_url,
                             name: friendsObjects[l].name,
                             screen_name: friendsObjects[l].screen_name,
-                            bio: friendsObjects[l].description
+                            bio: friendsObjects[l].description,
+                            location: friendsObjects[l].location
                         });
                     }
                     callback(friendsArray);
