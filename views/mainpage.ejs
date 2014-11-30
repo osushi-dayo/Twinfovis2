@@ -5,14 +5,14 @@
     <meta charset="utf-8">
     <title>TwitS</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-
+    <link rel='stylesheet' href='/stylesheets/profcard.css' />
     <style type="text/css">
     .circle {
         fill: #6495ED;
         stroke: #fff;
     }
     .root_circle {
-        fill: #4169E1;
+        fill: #6495ED;
         stroke: #fff;
     }
     .link {
@@ -31,7 +31,7 @@
         border-radius: 8px;
      /*  pointer-events: none;  This line needs to be removed */
     }
-        #loading {
+    #loading {
         width: 100px; /* gif画像の幅 */
         height: 100px; /* gif画像の高さ */
         margin: -75px 0 0 -75px; /* gif画像を画面中央に */
@@ -47,7 +47,7 @@
 </head>
 <body>
     <h1></h1>
-    <table height="600" width="1250" border="1">
+    <table id="main_table"height="600" width="1250" border="1" cellspacing="0">
         <tr>
             <td width="300" valign="top">
                 <table>
@@ -91,6 +91,7 @@ var div = d3.select("body")
 var svg = d3.select("#canvas").append("svg")
     .attr("width", width)
     .attr("height", height);
+    svg.append("def").append("filter").attr("id","selectionGlove");
 
 function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
 
@@ -132,9 +133,11 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
         .append('line')
         .attr('class', "link")
         .attr("stroke-width", function(d){
-            //console.log(d);
-            //return d.target.weight;
-            return 1;
+            if(d.target.weight < 10){
+                return d.target.weight*0.3;
+            }else if(d.target.weight >= 10){
+                return 3;
+            }
         });
 
     var node = svg.selectAll('.node')
@@ -177,7 +180,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
                 alert("指定するのは3人までにして欲しぃな...//");//アニメーションで出したらかっこいい
             }
             if(flg == 0){ //flg[0:target内に存在しない][1:target内に存在][2:4人目以上]
-                d3.select(this).style("fill", "#4169E1");
+                d3.select(this).style("fill", "#7FFF00");
                 target.push(d.name);
             }else if(flg == 1){
                 d3.select(this).style("fill", "#6495ED");
@@ -261,15 +264,67 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     return callback();
 }
 
+<<<<<<< HEAD
 function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな感じのを突っ込む
+=======
+var sample = [ { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'Montgomery',
+    screen_name: 'toe',
+    bio: 'Montgomery',
+    location: 'Montgomery' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'Montgomery',
+    screen_name: 'sns_ha_kuso',
+    bio: 'Montgomery',
+    location: 'Montgomery' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'Montgomery',
+    screen_name: 'sns_ha_kuso',
+    bio: 'うおおおおおおおおおおおおおおおおおおおおおおおおおおおお',
+    location: '' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: '勇者',
+    screen_name: 'sns_ha_kuso',
+    bio: '筋肉筋肉',
+    location: 'あああ' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'うんこ',
+    screen_name: 'sns_ha_kuso',
+    bio: 'じゅげむじゅげむごこうのすりきれかいじゃりすいぎょのホゲホゲほげ漢字ﾆｰﾊｵasdfsdfasd fasawer asdfae asdf asdf ',
+    location: 'tokyo' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'sns_ha_kuso',
+    screen_name: 'sns_ha_kuso',
+    bio: 'unkononono',
+    location: 'hogemi' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'hoge',
+    screen_name: 'sns_ha_kuso',
+    bio: 'hohohhhhhhhhhhhhhhohohoohogegegegehogheohgeohgoe',
+    location: '' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'ge',
+    screen_name: 'sns_ha_kuso',
+    bio: '男　子　高　校　生',
+    location: '' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'noたすく',
+    screen_name: 'sns_ha_kuso',
+    bio: '賢い☆かわいい☆エリーチカ☆',
+    location: 'Montgomery' } ];
+
+function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ込む
+>>>>>>> e3487f69cac1aa893aa62ac64e392cbeda0bfc57
     d3.select("#prof_table").remove();
     var prof_table = d3.select("#profile_detail")
         .append("table")
         .attr("id", "prof_table")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("width", "1250")
+        .attr("border",1)
+        .attr("cellspacing", 0);
 
     //hogeObj.forEach()???
+<<<<<<< HEAD
     var table_html = "<tr>";
     for(var i = 0; i < commonFriendsData.length; i++){
         table_html += "<td>";
@@ -277,6 +332,16 @@ function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな�
         table_html += "</td>";
         if( i != 0 && i != commonFriendsData.length-1 && (i+1)%5 == 0){
             table_html += "</tr><tr>";
+=======
+    var table_html = "<tr height=\"120px\">";
+    // var table_html = "";
+    for(var i = 0; i < sample.length; i++){
+        table_html += "<td width=\"20\" valign=\"top\">";
+        table_html += make_profcard(sample[i]);
+        table_html += "</td>";
+        if( i != 0 && i != sample.length-1 && (i+1)%5 == 0){
+            table_html += "</tr><tr height=\"120px\">";
+>>>>>>> e3487f69cac1aa893aa62ac64e392cbeda0bfc57
         }
         if(i == commonFriendsData.length-1){
             table_html += "</tr>";
@@ -287,7 +352,7 @@ function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな�
 
 function make_profcard(obj){ //ここで作成するcardを七並べみたいに並べていく感じかと思った
     var prof_html = "";
-    prof_html += "<div class=\"prf-card-inner\" height=\"100px\" width=\"120px\">";
+    prof_html += "<div class=\"prf-card-inner\" height=\"100\%\">";
     prof_html += "<a class=\"js-action-url\" target=\"_blank\" href=\"https:\/\/twitter.com\/"+obj.screen_name + "\">";
     prof_html +=     "<span class=\"prf-img\">";
     prof_html +=         "<img class=\"avatar\" src=\""+ obj.image_url +"\"></img>";
@@ -295,15 +360,17 @@ function make_profcard(obj){ //ここで作成するcardを七並べみたいに
     prof_html +=     "<strong class=\"fullname\">";
     prof_html +=         obj.name;
     prof_html +=     "</strong>";
-    prof_html +=     "<p class=\"username\">";
+    prof_html +=     "<p class=\"username\" text-align=\"center\">";
     prof_html +=         "@" + obj.screen_name;
     prof_html +=     "</p>";
     prof_html += "</a>";
     prof_html += "<p class=\"prf-bio\">";
-    prof_html +=     "bio:" +obj.bio;
+    prof_html +=   obj.bio;
     prof_html += "</p>";
     prof_html += "<p class=\"prf-location\">";
-    prof_html +=     "location:" + obj.location;
+    if(obj.location){
+        prof_html +=  "location : " + obj.location;
+    }
     prof_html += "</p>";
     prof_html += "</div>";
     return prof_html;

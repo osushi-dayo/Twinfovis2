@@ -1,0 +1,57 @@
+
+#prof_table {
+    background-color: #F8F8FF;
+    background-image: url(/images/prof_table2.jpg);
+}
+
+.prf-card-inner {
+    width: 85%;
+    margin: auto;
+    position: relative;
+    text-align: center;
+    color: black;
+    background-color:#F5F5F5;
+}
+
+.prf-img {
+    display: block;
+    vertical-align: top;
+    border-radius: 5px;
+    padding: 4px;
+    margin: 20px 0px 6px;
+    background: none repeat scroll 0% 0% #F8F8FF;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 3px;
+}
+
+.prf .fullname {
+    display: block;
+    font-size: 24px;
+    color: #FFF;
+}
+
+.prf .username {
+    font-size: 18px;
+    line-height: 24px;
+    padding-top: 1px;
+    display: block;
+    color: #FFF;
+}
+
+.prf-bio {
+    word-wrap: break-word;
+    width: 200px;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+    padding-bottom: 4px;
+}
+
+.prf .location {
+    position: relative;
+    font-size: 14px;
+}
