@@ -105,6 +105,12 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     //二人目を検索したときにtargetの中身とhtmlがおかしくならないように
     target = [];
     d3.select("#accounts").html("");
+
+    var testtext = svg.append('text')
+            .attr("font-size", 24)
+            .attr("fill", "black")
+            .text('Click Here to Quantize');
+
     var nodes = {};//nodesを初期化
     //Defining nodes
     links.forEach(function(link){
@@ -240,7 +246,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             .attr("src","/images/loading.gif");
     }
 
-    node.append("text")//てすと用（クオンタイズ）
+    node.append("text")
         .attr("x", 10)
         .attr("dy", 10)
         .attr("fill", "black")
@@ -259,11 +265,6 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     d3.select("#loading").remove();
 
     //console.log(bio_objects);
-
-    var testtext = svg.append('text')
-            .attr("font-size", 24)
-            .attr("fill", "black")
-            .text('Click Here to Quantize');
 
     function tick(e){ //rootノードをcenterに持ってくるために面倒なコードになっている
 

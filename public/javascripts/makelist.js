@@ -3,6 +3,8 @@ var socket = io();
 var copiedLinks = [];//どんどんターゲットとソースのデータが追加されていくlinksとは別の実体
 var bio_objects = {};//表示されたノードのプロフィール情報。nameやbioやlogcationがオブジェクトで格納される。
 var root_name = "";
+var secondNodes = [];//第２ノード(Rootの友達)の名前を格納(検索用)
+var triangle = {};//Rootを含む三角形を形成する２人[{"A": "B"}, {"c": "d"}, ...]
 $(function(){
 
     $("#search_submit").click(function(e){
@@ -35,9 +37,15 @@ $(function(){
 
         renderNodes(data.mentionArray, true, function(){
             socket.emit("Sub search",data.uniqueTargets);
+
+            secondNodes = [];
+            for(var i = 0; i < data.uniqueTargets.length; i++){
+                if(!bio_objects[data.uniqueTargets[i]].isProtected){
+                    secondNodes.push(data.uniqueTargets[i]);
+                }
+            }
+            console.log(secondNodes);
         });
-
-
 
     });
 
@@ -46,8 +54,26 @@ $(function(){
     socket.on("Sub response",function (data){
 
         copiedLinks = copiedLinks.concat(data.subMentionArray);
-        //console.log(copiedLinks);
 
+        //鍵垢じゃない　かつ　友達がゼロじゃない　なら　三角形が無いか検索
+        if(data.subMentionArray.length > 0 && !bio_objects[data.subMentionArray["0"].source].isProtected){
+
+            for(var i = 0; i < data.subMentionArray.length; i++){
+                if(secondNodes.indexOf(data.subMentionArray[i].target) !== -1){//三角形ができていれば
+                    var key_triangle = data.subMentionArray[i].target;
+                    var value_triangle = data.subMentionArray[i].source;
+                    if(key_triangle in triangle || triangle[value_triangle] == key_triangle){//登録済みなら
+                        continue;
+                    }else{
+                        triangle[key_triangle] = value_triangle;
+                    }
+                    console.log(data.subMentionArray[i].target + "と" + data.subMentionArray[i].source);
+                }
+            }
+
+        }
+        //console.log(copiedLinks);
+        //console.log(data);
         //console.log(counter);
         if(counter == data.num_of_SubNodes -1){
             renderNodes(copiedLinks, false, function(){
