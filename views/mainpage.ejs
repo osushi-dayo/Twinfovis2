@@ -261,98 +261,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     return callback();
 }
 
-// var sample = [ { image_url: 'http://pbs.twimg.com/profile_images/474714974162411520/Ht3fhvSP_normal.jpeg',
-//     name: '晴れりん',
-//     screen_name: 'mgclmnxx',
-//     bio: 'てんもんにーごーの魔法少女だよ！',
-//     location: 'りゅうとう ソフト お誕生日委員長' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/488709874285412352/pN_xQgy5_normal.jpeg',
-//     name: 'Tomoya',
-//     screen_name: '_t__t___t____',
-//     bio: 'シル投→日電でした。進捗を追い続けていますが、未だに捕まえられずにいます。進捗を見かけたら一報ください。',
-//     location: '天文24(天文アカ)' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/492263533833236481/tOeKqsHj_normal.jpeg',
-//     name: '転生しました(自己紹介参照',
-//     screen_name: '_8127_',
-//     bio: '転生先→@pamiltonian',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/526409277812912129/6PrUWY4R_normal.jpeg',
-//     name: 'エリンギ',
-//     screen_name: 'neversayNOeriko',
-//     bio: '豚汁が心に沁みる季節です',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/528489063540461568/p-CHu45c_normal.jpeg',
-//     name: 'まき',
-//     screen_name: '_makito_K',
-//     bio: '',
-//     location: 'シス創C ｳｪｰｲ' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/456077423608471552/UL825tad_normal.jpeg',
-//     name: 'さかも',
-//     screen_name: 'skmms2',
-//     bio: 'KWU/地文研天文25/あくとう▷こうとう',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/453740827143983104/eZ2vM8Ex_normal.jpeg',
-//     name: 'きむら',
-//     screen_name: 'branchairo3',
-//     bio: 'てんもん',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/527718511091527680/K1lj2B6W_normal.jpeg',
-//     name: 'すーぱお',
-//     screen_name: 'Supao_4',
-//     bio: 'あおとう→こうとう',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/515048960214306816/37evJV4E_normal.jpeg',
-//     name: 'たすく',
-//     screen_name: 'natsunosora415',
-//     bio: '地文研天文部　かごしい長',
-//     location: 'atmosphere' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/453677889041342464/8gAZuqB9_normal.jpeg',
-//     name: 'あいりん',
-//     screen_name: 'mgcmrnxx',
-//     bio: 'お茶大 発臨 天文25',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/532950759738843136/59pp8i9e_normal.jpeg',
-//     name: 'ヌルハチ',
-//     screen_name: 'hand_in_glove__',
-//     bio: '凛として倫理',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/417911283405447168/G2aRWIk3_normal.jpeg',
-//     name: 'めめぱっち',
-//     screen_name: 'eye_patch_',
-//     bio: '軟骨の唐揚げが大好物です                                             地物2015/天文25',
-//     location: '公用車' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/454639661600612353/6RYD-M9T_normal.jpeg',
-//     name: 'が〜す〜',
-//     screen_name: '_ga_su_',
-//     bio: 'eeic2015　天文25',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/419451781249130496/n94i6vno_normal.jpeg',
-//     name: '甘えんな',
-//     screen_name: 'costdn2',
-//     bio: '航空宇宙工学科/てんもん23\n\nさようなら。',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/487183448721739776/I8PBj3jw_normal.jpeg',
-//     name: '乾パン',
-//     screen_name: 'ckckckct',
-//     bio: '',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/505587816118501378/TN-1lVAN_normal.jpeg',
-//     name: 'やよちゃん',
-//     screen_name: 'Y4yoi',
-//     bio: 'ちっきんらーめん、ちょっぴっとだーけ、すっきーにーなてってーとてっと',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/536005465910439936/zhK3Ac8L_normal.jpeg',
-//     name: 'ふき',
-//     screen_name: 'fffuuu51',
-//     bio: '天文24',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/532356197462974465/8YRlVWCn_normal.jpeg',
-//     name: 'ととろ',
-//     screen_name: '0totoro',
-//     bio: '',
-//     location: '本女児童' } ];
-
-function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ込む
+function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな感じのを突っ込む
     d3.select("#prof_table").remove();
     var prof_table = d3.select("#profile_detail")
         .append("table")
@@ -362,14 +271,14 @@ function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ
 
     //hogeObj.forEach()???
     var table_html = "<tr>";
-    for(var i = 0; i < sample.length; i++){
+    for(var i = 0; i < commonFriendsData.length; i++){
         table_html += "<td>";
-        table_html += make_profcard(sample[i]);
+        table_html += make_profcard(commonFriendsData[i]);
         table_html += "</td>";
-        if( i != 0 && i != sample.length-1 && (i+1)%5 == 0){
+        if( i != 0 && i != commonFriendsData.length-1 && (i+1)%5 == 0){
             table_html += "</tr><tr>";
         }
-        if(i == sample.length-1){
+        if(i == commonFriendsData.length-1){
             table_html += "</tr>";
         }
     }
