@@ -139,25 +139,6 @@ io.on('connection', function (socket) {
             var bioSearchArray = [].concat(filterdArreyUnique);
             bioSearchArray.push(data);
 
-            bio_search(bioSearchArray,function(bioArray){
-                var bio_obj = {};
-                for(var i = 0; i < bioArray.length; i++){
-                    bio_obj[bioArray[i].screen_name] = {
-                        name: bioArray[i].name,
-                        screen_name: bioArray[i].screen_name,
-                        bio: bioArray[i].bio,
-                        image_url: bioArray[i].image_url,
-                        location: bioArray[i].location
-                    };
-                }
-                //console.log(bio_obj);
-                socket.emit("bio response",bio_obj);
-            });
-            //console.log(filterdArreyUnique);
-            //console.log(bioSearchArray);
-
-
-
             for(var i = 0; i < filterdArrey.length; i++){
                 mentionArray.push({
                     source: data,
@@ -173,7 +154,25 @@ io.on('connection', function (socket) {
                 mentionArrayForCopy:mentionArray
             };
 
-            socket.emit('Root response',forRoot);
+            bio_search(bioSearchArray,function(bioArray){
+                var bio_obj = {};
+                for(var i = 0; i < bioArray.length; i++){
+                    bio_obj[bioArray[i].screen_name] = {
+                        name: bioArray[i].name,
+                        screen_name: bioArray[i].screen_name,
+                        bio: bioArray[i].bio,
+                        image_url: bioArray[i].image_url,
+                        location: bioArray[i].location,
+                        isProtected: bioArray[i].isProtected
+                    };
+                }
+                //console.log(bio_obj);
+                socket.emit("bio response",bio_obj);
+                socket.emit('Root response',forRoot);
+
+            });
+            //console.log(filterdArreyUnique);
+            //console.log(bioSearchArray);
 
         });
 
@@ -266,7 +265,8 @@ function subSearch(subUserName, callback){//Rootユーザー以外のところ�
                         screen_name: bioArray[i].screen_name,
                         bio: bioArray[i].bio,
                         image_url: bioArray[i].image_url,
-                        location: bioArray[i].location
+                        location: bioArray[i].location,
+                        isProtected: bioArray[i].isProtected
                     };
                 }
                 // console.log(bio_obj);
@@ -380,7 +380,7 @@ function bio_search(screenNamesArray,callback){
 
     T.get('users/lookup',{screen_name: names_str},function(err, friendsObjects, response){
         if(err){console.log(err);}
-        //console.log(friendsObjects);
+        //console.log(friendsObjects[1+""]);
         var friendsArray = [];
 
         for(var l = 0; l < friendsObjects.length; l++){
@@ -389,7 +389,8 @@ function bio_search(screenNamesArray,callback){
                 name: friendsObjects[l].name,
                 screen_name: friendsObjects[l].screen_name,
                 bio: friendsObjects[l].description,
-                location: friendsObjects[l].location
+                location: friendsObjects[l].location,
+                isProtected: friendsObjects[l].protected
             });
         }
         callback(friendsArray);

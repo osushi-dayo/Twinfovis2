@@ -8,11 +8,11 @@
     <link rel='stylesheet' href='/stylesheets/profcard.css' />
     <style type="text/css">
     .circle {
-        fill: #6495ED;
+        /*fill: #6495ED;*/
         stroke: #fff;
     }
     .root_circle {
-        fill: #6495ED;
+        /*fill: #6495ED;*/
         stroke: #fff;
     }
     .link {
@@ -29,7 +29,6 @@
         background: "lightsteelblue";
         border: 0px;
         border-radius: 8px;
-     /*  pointer-events: none;  This line needs to be removed */
     }
     #loading {
         width: 100px; /* gif画像の幅 */
@@ -171,6 +170,16 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
                 d.fixed = false;
             }
         })
+        .attr('fill', function(d){
+            if(bio_objects[d.name] == undefined){
+                return "#6495ED";
+            }else if(bio_objects[d.name].isProtected){
+                return "#000";
+            }else{
+                return "#6495ED";
+            }
+
+        })
         .attr("r", function(d){
             if(d.name == root_name ){
                 return 20; // "d.index:0" means the root user.
@@ -179,6 +188,11 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             }
         })
         .on("click", function(d){///////////////////////////ADDED!!!!!!!
+            if(bio_objects[d.name] == undefined){
+                console.log("render err");
+            }else if(bio_objects[d.name].isProtected){//鍵垢はクリックイベント無視
+                return;
+            }
             var flg = 0;
             var dflg = -1;
             var account_html = "";
@@ -226,7 +240,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             .attr("src","/images/loading.gif");
     }
 
-    node.append("text")
+    node.append("text")//てすと用（クオンタイズ）
         .attr("x", 10)
         .attr("dy", 10)
         .attr("fill", "black")
@@ -244,8 +258,14 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
 
     d3.select("#loading").remove();
 
-    function tick(e){ //rootノードをcenterに持ってくるために面倒なコードになっている
+    //console.log(bio_objects);
 
+    var testtext = svg.append('text')
+            .attr("font-size", 24)
+            .attr("fill", "black")
+            .text('Click Here to Quantize');
+
+    function tick(e){ //rootノードをcenterに持ってくるために面倒なコードになっている
 
 
         node.attr("transform", function(d) {
@@ -253,6 +273,9 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
                 damper = 0.1;
                 d.x = d.x + (width/2 - d.x) * (damper + 0.71) * e.alpha;
                 d.y = d.y + (height/2 - d.y) * (damper + 0.71) * e.alpha;
+
+                testtext.attr("x", d.x)
+                        .attr("y", d.y);
             }
             if(d.start === true){
                 d.x = width/2;
@@ -262,6 +285,8 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             r = d.name.length;
             d.x = Math.max(r, Math.min(width - r, d.x));
             d.y = Math.max(r, Math.min(height - r, d.y));
+
+
 
             return "translate("+d.x+","+d.y+")";
         });
