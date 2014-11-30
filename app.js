@@ -134,7 +134,29 @@ io.on('connection', function (socket) {
             var filterdArreyUnique = filterdArrey.filter(function (x, i, self) {
                                         return self.indexOf(x) === i && i !== self.lastIndexOf(x);
                                     });
+
+            //配列をシャローコピー(ポインタ渡しではなくて別の実体)
+            var bioSearchArray = [].concat(filterdArreyUnique);
+            bioSearchArray.push(data);
+
+            bio_search(bioSearchArray,function(bioArray){
+                var bio_obj = {};
+                for(var i = 0; i < bioArray.length; i++){
+                    bio_obj[bioArray[i].screen_name] = {
+                        name: bioArray[i].name,
+                        screen_name: bioArray[i].screen_name,
+                        bio: bioArray[i].bio,
+                        image_url: bioArray[i].image_url,
+                        location: bioArray[i].location
+                    };
+                }
+                //console.log(bio_obj);
+                socket.emit("bio response",bio_obj);
+            });
             //console.log(filterdArreyUnique);
+            //console.log(bioSearchArray);
+
+
 
             for(var i = 0; i < filterdArrey.length; i++){
                 mentionArray.push({
@@ -146,7 +168,6 @@ io.on('connection', function (socket) {
             //[{rootInfo:hoge},{targetUnique:filterdArrayUnique},{mentionArray:mentionArray}]
             var forRoot = {};//オブジェクト
             forRoot = {
-                rootInfo:{name: "sayuri", bio: "ちゅんちゅん"},
                 uniqueTargets:filterdArreyUnique,
                 mentionArray:mentionArray,
                 mentionArrayForCopy:mentionArray
@@ -161,9 +182,12 @@ io.on('connection', function (socket) {
     socket.on("Sub search",function (data){
         var i = 0;
         //console.log(data);
-        var setInt = setInterval(function(){
+
+        var setInt = setInterval(function (){
             if(i < data.length){
-                subSearch(data[i],function(d){//Subノードのサーチ（api制限かかったらこの3行をコメントアウト）
+                subSearch(data[i],function (d,sub_bio_obj){//Subノードのサーチ（api制限かかったらこの3行をコメントアウト）
+                    socket.emit("bio response",sub_bio_obj);
+                    //console.log(sub_bio_obj);
                     socket.emit("Sub response",{
                         subMentionArray:d,
                         num_of_SubNodes:data.length
@@ -173,7 +197,7 @@ io.on('connection', function (socket) {
             }else{
                 clearInterval(setInt);
             }
-        },1000);
+        },100);
     });
 
     socket.on("search friernds",function(data){
@@ -228,7 +252,32 @@ function subSearch(subUserName, callback){//Rootユーザー以外のところ�
             });
         }
 
-        return callback(subMentionArray);
+        var subFilterdArreyUnique = subFilterdArrey.filter(function (x, i, self) {
+                    return self.indexOf(x) === i && i !== self.lastIndexOf(x);
+                });
+
+        var subBioSearchArray = [].concat(subFilterdArreyUnique);
+        var bio_obj = {};
+        if(subFilterdArrey.length > 0){
+            bio_search(subBioSearchArray,function(bioArray){
+                for(var i = 0; i < bioArray.length; i++){
+                    bio_obj[bioArray[i].screen_name] = {
+                        name: bioArray[i].name,
+                        screen_name: bioArray[i].screen_name,
+                        bio: bioArray[i].bio,
+                        image_url: bioArray[i].image_url,
+                        location: bioArray[i].location
+                    };
+                }
+                // console.log(bio_obj);
+                //socket.emit("bio response",bio_obj);
+                return callback(subMentionArray,bio_obj);
+
+            });
+        }else{
+            return callback(subMentionArray,{});
+        }
+        //console.log(bio_obj);
     });
 }
 
@@ -309,4 +358,42 @@ function searchCommonFriends(target, callback){
     }
 }
 
+
+function bio_search(screenNamesArray,callback){
+    //検索人数を99人二に制限
+    if(screenNamesArray.length > 99){
+        screenNamesArray = screenNamesArray.slice(-99);
+    }
+
+    var names_str = "";
+    for(var i = 0; i < screenNamesArray.length; i++){
+        names_str += screenNamesArray[i];
+        names_str += ",";
+    }
+
+    var T = new tw({
+        consumer_key: settings.CONSUMER_KEY,
+        consumer_secret: settings.CONSUMER_SECRET,
+        access_token: settings.ACCESS_TOKEN_KEY,
+        access_token_secret: settings.ACCESS_TOKEN_SECRET
+    });
+
+    T.get('users/lookup',{screen_name: names_str},function(err, friendsObjects, response){
+        if(err){console.log(err);}
+        //console.log(friendsObjects);
+        var friendsArray = [];
+
+        for(var l = 0; l < friendsObjects.length; l++){
+            friendsArray.push({
+                image_url: friendsObjects[l].profile_image_url,
+                name: friendsObjects[l].name,
+                screen_name: friendsObjects[l].screen_name,
+                bio: friendsObjects[l].description,
+                location: friendsObjects[l].location
+            });
+        }
+        callback(friendsArray);
+    });
+
+}
 

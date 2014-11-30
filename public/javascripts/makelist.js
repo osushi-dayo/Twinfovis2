@@ -1,13 +1,13 @@
 var target = [];
+var socket = io();
+var copiedLinks = [];//どんどんターゲットとソースのデータが追加されていくlinksとは別の実体
+var bio_objects = {};//表示されたノードのプロフィール情報。nameやbioやlogcationがオブジェクトで格納される。
+var root_name = "";
 $(function(){
-
-    //var socket = io.connect('http://192.168.33.10');
-    var socket = io();
-
-    var copiedLinks = [];//どんどんターゲットとソースのデータが追加されていくlinksとは別の実体
 
     $("#search_submit").click(function(e){
         socket.emit('search',$('#search_user').val());
+        root_name = $('#search_user').val();
         d3.select("body")
             .append("div")
             .attr("id", "loading")
@@ -18,10 +18,6 @@ $(function(){
     $("#make_list").click(function(e){
         socket.emit('search friernds',target);
         console.log(target);
-
-        //新しく表示したページ下まで自動スクロール
-        var target_scroll = $('html, body');
-        target_scroll.animate({ scrollTop: 980 }, { duration: 2000, easing: 'swing', });
 
         return e.preventDefault();
     });
@@ -37,7 +33,11 @@ $(function(){
 
         copiedLinks = data.mentionArrayForCopy;
 
-        socket.emit("Sub search",data.uniqueTargets);
+        renderNodes(data.mentionArray, true, function(){
+            socket.emit("Sub search",data.uniqueTargets);
+        });
+
+
 
     });
 
@@ -57,20 +57,42 @@ $(function(){
         }
         counter++;
 
-
-        // if(data.length != 0){
-        //     renderNodes(copiedLinks, false, function(){
-        //             console.log("rendered SubNodes");
-        //         });
-        // }
-
     });
 
-
+    //３人まで選択=>検索　とかけた時の返信。
+    //dataは{name:~ ,screen_name:~ ,bio,url:~ ,location:~ }の配列
     socket.on("Frirends response",function(data){
-        console.log(data);
+        //console.log(data);
         //ここで画面下にhtml(detail)を追加したい
         prof_detail_html(data);
+        //新しく表示したページ下まで自動スクロール
+        var target_scroll = $('html, body');
+        target_scroll.animate({ scrollTop: 980 }, { duration: 2000, easing: 'swing', });
+    });
+
+    //マウスオーバーした時参照するためのオブジェクト。プロフィールが格納されている。データ構造は以下
+    // {
+    //     sushi_dayo:{
+    //         name:~,
+    //         screen_name:~,
+    //         image_url:~,
+    //         location:~,
+    //         bio:~
+    //     },
+
+    //     sns_ha_kuso:{
+    //         name:~,
+    //         screen_name:~,
+    //         image_url:~,
+    //         location:~,
+    //         bio:~
+    //     },
+
+    //     ...
+    // }
+    socket.on("bio response",function(bio_obj){
+        $.extend(bio_objects, bio_obj);
+        //console.log(bio_obj);
     });
 
 });

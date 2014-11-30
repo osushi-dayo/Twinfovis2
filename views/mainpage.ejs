@@ -46,6 +46,7 @@
     </style>
 </head>
 <body>
+    <div id="back">
     <h1 id="logo">Twitter × D3.js</h1>
     <table id="main_table"height="600" width="1300" border="1" cellspacing="0">
         <tr>
@@ -68,6 +69,10 @@
             </td><!--ここにsvgをはりつける-->
         </tr>
     </table>
+
+    <!-- マウスオーバー時のプロフィール表示用 -->
+    <div id="tooltip_div" style="position:absolute; left:1098px; top:80px; width:250px; height:400px;">
+    </div>
     <div id="profile_detail"></div>
     <a id="scroll_top">ページTopへ</a>
 <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -77,7 +82,7 @@
 
 <!--ここからがd3-->
 <script type="text/javascript">
-var width = 1100;
+var width = 1000;
 var height = 700;
 //var links = {};
 
@@ -91,6 +96,7 @@ var div = d3.select("body")
 var svg = d3.select("#canvas").append("svg")
     .attr("width", width)
     .attr("height", height);
+
     svg.append("def").append("filter").attr("id","selectionGlove");
 
 function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
@@ -152,14 +158,21 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             return d.name;
         })
         .attr("class", function(d){
-            if(d.index == 0 ){//rootの最初の一個
+            if(d.name == root_name ){//rootの最初の一個
                 return "root_circle";
             }else{
                 return "circle";
             }
         })
+        .attr("fixed", function(d){
+            if(d.name == root_name ){//rootの最初の一個
+                d.fixed = true;
+            }else{
+                d.fixed = false;
+            }
+        })
         .attr("r", function(d){
-            if(d.index == 0 ){
+            if(d.name == root_name ){
                 return 20; // "d.index:0" means the root user.
             }else{
                 return 10;
@@ -194,25 +207,24 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             }
             d3.select("#accounts").html(account_html);
             //console.log(target);
+        })//ツールチップ
+        .on("mouseover", function(d) {
+            //ノードの名前(screen_name)でbio_object内を検索。(bio_objects[d.name])
+            //bio_objects[d.name]はそのままツイッターのユーザーオブジェクトなのでmake_profcardでツールチップに表示。
+            var tooltip_html = make_profcard(bio_objects[d.name]);
+            d3.select("#tooltip_div").html(tooltip_html);
+        })
+        .on("mouseout",function(d){
 
-        });//一旦ツールチップ消します
-        // .on("mouseover", function(d) {
-        //     div.transition()
-        //         .duration(500)
-        //         .style("opacity", 0);
-        //     div.transition()
-        //         .duration(200)
-        //         .style("opacity", .9);
-        //     div.html("<p>@"+d.name+"<br>"
-        //                 +"bio : "+ "hoge for bio"+"</p>")
-        //         .style("left", (d3.event.pageX-15) + "px")
-        //         .style("top", (d3.event.pageY-90) + "px");
-        // })
-        // .on("mouseout",function(d){
-        //     div.html("<p></p>")
-        //         .style("left", (d3.event.pageX-15) + "px")
-        //         .style("top", (d3.event.pageY-90) + "px");
-        // });
+        });
+
+    if(isRoot){
+        d3.select("body")
+            .append("div")
+            .attr("id", "loading")
+            .append("img")
+            .attr("src","/images/loading.gif");
+    }
 
     node.append("text")
         .attr("x", 10)
@@ -237,7 +249,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
 
 
         node.attr("transform", function(d) {
-            if(d.index==0 ){
+            if(d.name==root_name ){
                 damper = 0.1;
                 d.x = d.x + (width/2 - d.x) * (damper + 0.71) * e.alpha;
                 d.y = d.y + (height/2 - d.y) * (damper + 0.71) * e.alpha;
@@ -321,5 +333,6 @@ function dragstart(d) {
 }
 
 </script>
+</div>
 </body>
 </html>
