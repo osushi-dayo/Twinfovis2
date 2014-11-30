@@ -46,14 +46,14 @@
     </style>
 </head>
 <body>
-    <h1></h1>
-    <table id="main_table"height="600" width="1250" border="1" cellspacing="0">
+    <h1 id="logo">Twitter × D3.js</h1>
+    <table id="main_table"height="600" width="1300" border="1" cellspacing="0">
         <tr>
-            <td width="300" valign="top">
+            <td width="200" valign="top">
                 <table>
                     <tr>
                         <form>
-                            <input id="search_user" type="text" name="user_id" value=""/>
+                            <input id="search_user" placeholder="user name" type="text" name="user_id" value=""/>
                             <input id="search_submit" type="submit" src=" ./image/search1.jpg" height="30"align="top" value="search"/><!--imageもしたい-->
                         </form><br>
                     </tr>
@@ -64,7 +64,7 @@
                     </tr>
                 </table>
             </td>
-            <td width="1200" id="canvas">
+            <td width="1100" height="700" id="canvas">
             </td><!--ここにsvgをはりつける-->
         </tr>
     </table>
@@ -77,8 +77,8 @@
 
 <!--ここからがd3-->
 <script type="text/javascript">
-var width = 900;
-var height = 900;
+var width = 1100;
+var height = 700;
 //var links = {};
 
 // Define 'div' for tooltips
@@ -264,57 +264,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     return callback();
 }
 
-<<<<<<< HEAD
 function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな感じのを突っ込む
-=======
-var sample = [ { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'Montgomery',
-    screen_name: 'toe',
-    bio: 'Montgomery',
-    location: 'Montgomery' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'Montgomery',
-    screen_name: 'sns_ha_kuso',
-    bio: 'Montgomery',
-    location: 'Montgomery' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'Montgomery',
-    screen_name: 'sns_ha_kuso',
-    bio: 'うおおおおおおおおおおおおおおおおおおおおおおおおおおおお',
-    location: '' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: '勇者',
-    screen_name: 'sns_ha_kuso',
-    bio: '筋肉筋肉',
-    location: 'あああ' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'うんこ',
-    screen_name: 'sns_ha_kuso',
-    bio: 'じゅげむじゅげむごこうのすりきれかいじゃりすいぎょのホゲホゲほげ漢字ﾆｰﾊｵasdfsdfasd fasawer asdfae asdf asdf ',
-    location: 'tokyo' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'sns_ha_kuso',
-    screen_name: 'sns_ha_kuso',
-    bio: 'unkononono',
-    location: 'hogemi' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'hoge',
-    screen_name: 'sns_ha_kuso',
-    bio: 'hohohhhhhhhhhhhhhhohohoohogegegegehogheohgeohgoe',
-    location: '' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'ge',
-    screen_name: 'sns_ha_kuso',
-    bio: '男　子　高　校　生',
-    location: '' },
-  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
-    name: 'noたすく',
-    screen_name: 'sns_ha_kuso',
-    bio: '賢い☆かわいい☆エリーチカ☆',
-    location: 'Montgomery' } ];
-
-function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ込む
->>>>>>> e3487f69cac1aa893aa62ac64e392cbeda0bfc57
     d3.select("#prof_table").remove();
     var prof_table = d3.select("#profile_detail")
         .append("table")
@@ -323,25 +273,14 @@ function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ
         .attr("border",1)
         .attr("cellspacing", 0);
 
-    //hogeObj.forEach()???
-<<<<<<< HEAD
-    var table_html = "<tr>";
+    var table_html = "<tr height=\"120px\">";
+    // var table_html = "";
     for(var i = 0; i < commonFriendsData.length; i++){
-        table_html += "<td>";
+        table_html += "<td width=\"20\" valign=\"top\">";
         table_html += make_profcard(commonFriendsData[i]);
         table_html += "</td>";
         if( i != 0 && i != commonFriendsData.length-1 && (i+1)%5 == 0){
-            table_html += "</tr><tr>";
-=======
-    var table_html = "<tr height=\"120px\">";
-    // var table_html = "";
-    for(var i = 0; i < sample.length; i++){
-        table_html += "<td width=\"20\" valign=\"top\">";
-        table_html += make_profcard(sample[i]);
-        table_html += "</td>";
-        if( i != 0 && i != sample.length-1 && (i+1)%5 == 0){
             table_html += "</tr><tr height=\"120px\">";
->>>>>>> e3487f69cac1aa893aa62ac64e392cbeda0bfc57
         }
         if(i == commonFriendsData.length-1){
             table_html += "</tr>";
@@ -381,6 +320,6 @@ function dragstart(d) {
     //d3.select(this).classed("fixed", d.fixed = true);
 }
 
-    </script>
+</script>
 </body>
 </html>

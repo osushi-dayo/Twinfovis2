@@ -1,6 +1,6 @@
 var target = [];
 $(function(){
-    prof_detail_html(null);
+
     //var socket = io.connect('http://192.168.33.10');
     var socket = io();
 
