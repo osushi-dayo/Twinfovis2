@@ -5,14 +5,14 @@
     <meta charset="utf-8">
     <title>TwitS</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-
+    <link rel='stylesheet' href='/stylesheets/profcard.css' />
     <style type="text/css">
     .circle {
         fill: #6495ED;
         stroke: #fff;
     }
     .root_circle {
-        fill: #4169E1;
+        fill: #6495ED;
         stroke: #fff;
     }
     .link {
@@ -31,7 +31,7 @@
         border-radius: 8px;
      /*  pointer-events: none;  This line needs to be removed */
     }
-        #loading {
+    #loading {
         width: 100px; /* gif画像の幅 */
         height: 100px; /* gif画像の高さ */
         margin: -75px 0 0 -75px; /* gif画像を画面中央に */
@@ -47,7 +47,7 @@
 </head>
 <body>
     <h1></h1>
-    <table height="600" width="1250" border="1">
+    <table id="main_table"height="600" width="1250" border="1" cellspacing="0">
         <tr>
             <td width="300" valign="top">
                 <table>
@@ -91,6 +91,7 @@ var div = d3.select("body")
 var svg = d3.select("#canvas").append("svg")
     .attr("width", width)
     .attr("height", height);
+    svg.append("def").append("filter").attr("id","selectionGlove");
 
 function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
 
@@ -132,9 +133,11 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
         .append('line')
         .attr('class', "link")
         .attr("stroke-width", function(d){
-            //console.log(d);
-            //return d.target.weight;
-            return 1;
+            if(d.target.weight < 10){
+                return d.target.weight*0.3;
+            }else if(d.target.weight >= 10){
+                return 3;
+            }
         });
 
     var node = svg.selectAll('.node')
@@ -177,7 +180,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
                 alert("指定するのは3人までにして欲しぃな...//");//アニメーションで出したらかっこいい
             }
             if(flg == 0){ //flg[0:target内に存在しない][1:target内に存在][2:4人目以上]
-                d3.select(this).style("fill", "#4169E1");
+                d3.select(this).style("fill", "#7FFF00");
                 target.push(d.name);
             }else if(flg == 1){
                 d3.select(this).style("fill", "#6495ED");
@@ -259,113 +262,70 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     return callback();
 }
 
-// var sample = [ { image_url: 'http://pbs.twimg.com/profile_images/474714974162411520/Ht3fhvSP_normal.jpeg',
-//     name: '晴れりん',
-//     screen_name: 'mgclmnxx',
-//     bio: 'てんもんにーごーの魔法少女だよ！',
-//     location: 'りゅうとう ソフト お誕生日委員長' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/488709874285412352/pN_xQgy5_normal.jpeg',
-//     name: 'Tomoya',
-//     screen_name: '_t__t___t____',
-//     bio: 'シル投→日電でした。進捗を追い続けていますが、未だに捕まえられずにいます。進捗を見かけたら一報ください。',
-//     location: '天文24(天文アカ)' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/492263533833236481/tOeKqsHj_normal.jpeg',
-//     name: '転生しました(自己紹介参照',
-//     screen_name: '_8127_',
-//     bio: '転生先→@pamiltonian',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/526409277812912129/6PrUWY4R_normal.jpeg',
-//     name: 'エリンギ',
-//     screen_name: 'neversayNOeriko',
-//     bio: '豚汁が心に沁みる季節です',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/528489063540461568/p-CHu45c_normal.jpeg',
-//     name: 'まき',
-//     screen_name: '_makito_K',
-//     bio: '',
-//     location: 'シス創C ｳｪｰｲ' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/456077423608471552/UL825tad_normal.jpeg',
-//     name: 'さかも',
-//     screen_name: 'skmms2',
-//     bio: 'KWU/地文研天文25/あくとう▷こうとう',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/453740827143983104/eZ2vM8Ex_normal.jpeg',
-//     name: 'きむら',
-//     screen_name: 'branchairo3',
-//     bio: 'てんもん',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/527718511091527680/K1lj2B6W_normal.jpeg',
-//     name: 'すーぱお',
-//     screen_name: 'Supao_4',
-//     bio: 'あおとう→こうとう',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/515048960214306816/37evJV4E_normal.jpeg',
-//     name: 'たすく',
-//     screen_name: 'natsunosora415',
-//     bio: '地文研天文部　かごしい長',
-//     location: 'atmosphere' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/453677889041342464/8gAZuqB9_normal.jpeg',
-//     name: 'あいりん',
-//     screen_name: 'mgcmrnxx',
-//     bio: 'お茶大 発臨 天文25',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/532950759738843136/59pp8i9e_normal.jpeg',
-//     name: 'ヌルハチ',
-//     screen_name: 'hand_in_glove__',
-//     bio: '凛として倫理',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/417911283405447168/G2aRWIk3_normal.jpeg',
-//     name: 'めめぱっち',
-//     screen_name: 'eye_patch_',
-//     bio: '軟骨の唐揚げが大好物です                                             地物2015/天文25',
-//     location: '公用車' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/454639661600612353/6RYD-M9T_normal.jpeg',
-//     name: 'が〜す〜',
-//     screen_name: '_ga_su_',
-//     bio: 'eeic2015　天文25',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/419451781249130496/n94i6vno_normal.jpeg',
-//     name: '甘えんな',
-//     screen_name: 'costdn2',
-//     bio: '航空宇宙工学科/てんもん23\n\nさようなら。',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/487183448721739776/I8PBj3jw_normal.jpeg',
-//     name: '乾パン',
-//     screen_name: 'ckckckct',
-//     bio: '',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/505587816118501378/TN-1lVAN_normal.jpeg',
-//     name: 'やよちゃん',
-//     screen_name: 'Y4yoi',
-//     bio: 'ちっきんらーめん、ちょっぴっとだーけ、すっきーにーなてってーとてっと',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/536005465910439936/zhK3Ac8L_normal.jpeg',
-//     name: 'ふき',
-//     screen_name: 'fffuuu51',
-//     bio: '天文24',
-//     location: '' },
-//   { image_url: 'http://pbs.twimg.com/profile_images/532356197462974465/8YRlVWCn_normal.jpeg',
-//     name: 'ととろ',
-//     screen_name: '0totoro',
-//     bio: '',
-//     location: '本女児童' } ];
+var sample = [ { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'Montgomery',
+    screen_name: 'toe',
+    bio: 'Montgomery',
+    location: 'Montgomery' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'Montgomery',
+    screen_name: 'sns_ha_kuso',
+    bio: 'Montgomery',
+    location: 'Montgomery' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'Montgomery',
+    screen_name: 'sns_ha_kuso',
+    bio: 'うおおおおおおおおおおおおおおおおおおおおおおおおおおおお',
+    location: '' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: '勇者',
+    screen_name: 'sns_ha_kuso',
+    bio: '筋肉筋肉',
+    location: 'あああ' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'うんこ',
+    screen_name: 'sns_ha_kuso',
+    bio: 'じゅげむじゅげむごこうのすりきれかいじゃりすいぎょのホゲホゲほげ漢字ﾆｰﾊｵasdfsdfasd fasawer asdfae asdf asdf ',
+    location: 'tokyo' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'sns_ha_kuso',
+    screen_name: 'sns_ha_kuso',
+    bio: 'unkononono',
+    location: 'hogemi' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'hoge',
+    screen_name: 'sns_ha_kuso',
+    bio: 'hohohhhhhhhhhhhhhhohohoohogegegegehogheohgeohgoe',
+    location: '' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'ge',
+    screen_name: 'sns_ha_kuso',
+    bio: '男　子　高　校　生',
+    location: '' },
+  { image_url: 'https://pbs.twimg.com/profile_images/519231129929269248/v3930C0p_bigger.jpeg',
+    name: 'noたすく',
+    screen_name: 'sns_ha_kuso',
+    bio: '賢い☆かわいい☆エリーチカ☆',
+    location: 'Montgomery' } ];
 
 function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ込む
     d3.select("#prof_table").remove();
     var prof_table = d3.select("#profile_detail")
         .append("table")
         .attr("id", "prof_table")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("width", "1250")
+        .attr("border",1)
+        .attr("cellspacing", 0);
 
     //hogeObj.forEach()???
-    var table_html = "<tr>";
+    var table_html = "<tr height=\"120px\">";
+    // var table_html = "";
     for(var i = 0; i < sample.length; i++){
-        table_html += "<td>";
+        table_html += "<td width=\"20\" valign=\"top\">";
         table_html += make_profcard(sample[i]);
         table_html += "</td>";
         if( i != 0 && i != sample.length-1 && (i+1)%5 == 0){
-            table_html += "</tr><tr>";
+            table_html += "</tr><tr height=\"120px\">";
         }
         if(i == sample.length-1){
             table_html += "</tr>";
@@ -376,7 +336,7 @@ function prof_detail_html(){ //ここに[{},{},{}]みたいな感じのを突っ
 
 function make_profcard(obj){ //ここで作成するcardを七並べみたいに並べていく感じかと思った
     var prof_html = "";
-    prof_html += "<div class=\"prf-card-inner\" height=\"100px\" width=\"120px\">";
+    prof_html += "<div class=\"prf-card-inner\" height=\"100\%\">";
     prof_html += "<a class=\"js-action-url\" target=\"_blank\" href=\"https:\/\/twitter.com\/"+obj.screen_name + "\">";
     prof_html +=     "<span class=\"prf-img\">";
     prof_html +=         "<img class=\"avatar\" src=\""+ obj.image_url +"\"></img>";
@@ -384,15 +344,17 @@ function make_profcard(obj){ //ここで作成するcardを七並べみたいに
     prof_html +=     "<strong class=\"fullname\">";
     prof_html +=         obj.name;
     prof_html +=     "</strong>";
-    prof_html +=     "<p class=\"username\">";
+    prof_html +=     "<p class=\"username\" text-align=\"center\">";
     prof_html +=         "@" + obj.screen_name;
     prof_html +=     "</p>";
     prof_html += "</a>";
     prof_html += "<p class=\"prf-bio\">";
-    prof_html +=     "bio:" +obj.bio;
+    prof_html +=   obj.bio;
     prof_html += "</p>";
     prof_html += "<p class=\"prf-location\">";
-    prof_html +=     "location:" + obj.location;
+    if(obj.location){
+        prof_html +=  "location : " + obj.location;
+    }
     prof_html += "</p>";
     prof_html += "</div>";
     return prof_html;
