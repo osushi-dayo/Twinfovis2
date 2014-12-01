@@ -60,7 +60,7 @@
                     <tr>
                         <p>Selected Accounts</p>
                         <div id="accounts"></div>
-                        <a id="make_list" href="#prof_detail">Make List</a>
+                        <button id="make_list" href="#prof_detail">Find Common Friends!</button>
                     </tr>
                 </table>
             </td>
@@ -222,7 +222,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             //今度はselectedAccounts用にhtmlを作成
             if(target[0]){
                 for(var i = 0; i < target.length; i++){
-                    account_html += "<p>@"+ target[i]+"</p>";
+                    account_html += make_light_profcard(bio_objects[target[i]]);
                 }
             }
             d3.select("#accounts").html(account_html);
@@ -349,6 +349,24 @@ function make_profcard(obj){ //ここで作成するcardを七並べみたいに
         prof_html +=  "location : " + obj.location;
     }
     prof_html += "</p>";
+    prof_html += "</div>";
+    return prof_html;
+}
+
+function make_light_profcard(obj){
+    var prof_html = "";
+    prof_html += "<div class=\"prf-card-inner\" height=\"100\%\">";
+    prof_html += "<a class=\"js-action-url\" target=\"_blank\" href=\"https:\/\/twitter.com\/"+obj.screen_name + "\">";
+    prof_html +=     "<span class=\"prf-img\">";
+    prof_html +=         "<img class=\"avatar\" src=\""+ obj.image_url +"\"></img>";
+    prof_html +=     "</span>";
+    prof_html +=     "<strong class=\"fullname\">";
+    prof_html +=         obj.name;
+    prof_html +=     "</strong>";
+    prof_html +=     "<p class=\"username\" text-align=\"center\">";
+    prof_html +=         "@" + obj.screen_name;
+    prof_html +=     "</p>";
+    prof_html += "</a>";
     prof_html += "</div>";
     return prof_html;
 }
