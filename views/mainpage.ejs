@@ -143,6 +143,23 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     //二人目を検索したときにtargetの中身とhtmlがおかしくならないように
     target = [];
     d3.select("#accounts").html("");
+
+    var line2 = d3.svg.line()
+         .x(function(d) { return d[0]; })
+         .y(function(d) { return d[1]; })
+         .interpolate("interpolate");
+
+    var tri = {};//三角形の情報を保持
+
+    for(key in triangle){
+        //console.log(key);
+        //console.log(triangle[key]);
+        tri[key] = svg.append("g")
+           .append("path")
+           .attr("fill","#fcc")
+           .attr("stroke", "black");
+    }
+
     //usage2
     c1 = [50, 75];
     c2 = [30, 90];
@@ -175,11 +192,6 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
     });
     svg.append("text").attr("x",55).attr("y",50).attr("font-size", "20px").attr("font-weight", "bold").text("3. Select 1~3 nodes.");
     svg.append("text").attr("x",55).attr("y",75).attr("font-size", "20px").attr("font-weight", "bold").text("4. Click \"FindCommonFriends!\".");
-
-    var testtext = svg.append('text')
-            .attr("font-size", 24)
-            .attr("fill", "black")
-            .text('Click Here to Quantize');
 
     var nodes = {};//nodesを初期化
     //Defining nodes
@@ -345,8 +357,6 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
                 d.x = d.x + (width/2 - d.x) * (damper + 0.71) * e.alpha;
                 d.y = d.y + (height/2 - d.y) * (damper + 0.71) * e.alpha;
 
-                testtext.attr("x", d.x)
-                        .attr("y", d.y);
             }
             if(d.start === true){
                 d.x = width/2;
@@ -357,7 +367,14 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             d.x = Math.max(r, Math.min(width - r, d.x));
             d.y = Math.max(r, Math.min(height - r, d.y));
 
-
+            for(key in triangle){
+                tri[key].attr('d',function(){
+                    return "M" + nodes[root_name].x +  ","  + nodes[root_name].y
+                    + "L" + nodes[key].x + "," + nodes[key].y
+                    + "L" + nodes[ triangle[key] ].x  + "," + nodes[ triangle[key] ].y
+                    + "z";
+                });
+            }
 
             return "translate("+d.x+","+d.y+")";
         });
