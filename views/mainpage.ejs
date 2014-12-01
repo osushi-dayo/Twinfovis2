@@ -84,7 +84,7 @@
 var width = 1000;
 var height = 700;
 //var links = {};
-
+var tri = {};//三角形の情報を保持
 // Define 'div' for tooltips
 var div = d3.select("body")
     .append("div")
@@ -149,7 +149,7 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
          .y(function(d) { return d[1]; })
          .interpolate("interpolate");
 
-    var tri = {};//三角形の情報を保持
+    tri = {};
 
     for(key in triangle){
         //console.log(key);
@@ -367,14 +367,19 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
             d.x = Math.max(r, Math.min(width - r, d.x));
             d.y = Math.max(r, Math.min(height - r, d.y));
 
+
             for(key in triangle){
-                tri[key].attr('d',function(){
-                    return "M" + nodes[root_name].x +  ","  + nodes[root_name].y
-                    + "L" + nodes[key].x + "," + nodes[key].y
-                    + "L" + nodes[ triangle[key] ].x  + "," + nodes[ triangle[key] ].y
-                    + "z";
-                });
+                //三角形を描画するためのオブジェクトが定義されていたら
+                if(tri[key] && nodes[key] && nodes[triangle[key]] && nodes[root_name]){
+                    tri[key].attr('d',function(){
+                        return "M" + nodes[root_name].x +  ","  + nodes[root_name].y
+                        + "L" + nodes[key].x + "," + nodes[key].y
+                        + "L" + nodes[ triangle[key] ].x  + "," + nodes[ triangle[key] ].y
+                        + "z";
+                    });
+                }
             }
+
 
             return "translate("+d.x+","+d.y+")";
         });

@@ -8,19 +8,35 @@ var triangle = {};//Rootを含む三角形を形成する２人[{"A": "B"}, {"c"
 $(function(){
 
     $("#search_submit").click(function(e){
-        socket.emit('search',$('#search_user').val());
-        root_name = $('#search_user').val();
-        d3.select("body")
-            .append("div")
-            .attr("id", "loading")
-            .append("img")
-            .attr("src","/images/loading.gif");
+        var search_str = $('#search_user').val();
+        search_str = search_str.replace(/\s+/g, "");//正規表現で空文字全削除
+        //console.log(search_str);
+        if(search_str == ""){
+            rootSeachAlert("Cannot Search! Please set a user ID");
+        }else{
+            socket.emit('search',search_str);
+            root_name = search_str;
+            d3.select("body")
+                .append("div")
+                .attr("id", "loading")
+                .append("img")
+                .attr("src","/images/loading.gif");
+        }
+
         return e.preventDefault();//ページ更新しないsubmitじゃなくてただのボタンでも良い
     });
     $("#make_list").click(function(e){
-        socket.emit('search friernds',target);
-        console.log(target);
 
+        if(target.length < 2){
+            alert("共通の友達を探すので、二人以上選択して下さい。")
+        }else{
+            d3.select("body")
+                .append("div")
+                .attr("id", "loading")
+                .append("img")
+                .attr("src","/images/loading.gif");
+            socket.emit('search friernds',target);
+        }
         return e.preventDefault();
     });
 
@@ -34,18 +50,28 @@ $(function(){
     socket.on("Root response",function (data){
 
         copiedLinks = data.mentionArrayForCopy;
+        triangle = {};//三角形情報を初期化
+        //console.dir(data.mentionArray);
 
-        renderNodes(data.mentionArray, true, function(){
-            socket.emit("Sub search",data.uniqueTargets);
-
-            secondNodes = [];
-            for(var i = 0; i < data.uniqueTargets.length; i++){
-                if(!bio_objects[data.uniqueTargets[i]].isProtected){
-                    secondNodes.push(data.uniqueTargets[i]);
+        if(data.mentionArray && data.mentionArray.length > 1){
+            renderNodes(data.mentionArray, true, function(){
+                secondNodes = [];
+                for(var i = 0; i < data.uniqueTargets.length; i++){
+                    if(!bio_objects[data.uniqueTargets[i]].isProtected){
+                        secondNodes.push(data.uniqueTargets[i]);
+                    }
                 }
-            }
-            console.log(secondNodes);
-        });
+                //console.log(secondNodes);
+                if(secondNodes){
+                    socket.emit("Sub search",data.uniqueTargets);
+                }
+
+            });
+        }else{
+            rootSeachAlert("Sorry! Cannot find connections. Please try with another userID.");
+        }
+
+
 
     });
 
@@ -67,7 +93,7 @@ $(function(){
                     }else{
                         triangle[key_triangle] = value_triangle;
                     }
-                    console.log(data.subMentionArray[i].target + "と" + data.subMentionArray[i].source);
+                    //console.log(data.subMentionArray[i].target + "と" + data.subMentionArray[i].source);
                 }
             }
 
@@ -92,6 +118,7 @@ $(function(){
         //ここで画面下にhtml(detail)を追加したい
         prof_detail_html(data);
         //新しく表示したページ下まで自動スクロール
+        d3.select("#loading").remove();
         var target_scroll = $('html, body');
         target_scroll.animate({ scrollTop: 830 }, { duration: 2000, easing: 'swing', });
     });
@@ -120,5 +147,43 @@ $(function(){
         $.extend(bio_objects, bio_obj);
         //console.log(bio_obj);
     });
+
+    //Rootユーザー検索に対し、不正な操作or検索エラーが出た時の警告メッセージ表示＆ノード初期化
+    function rootSeachAlert(alartMseeage){
+        d3.select("#loading").remove();
+        svg.selectAll("*").remove();
+        //Usage1
+        c1 = [50, 45];
+        c2 = [30, 30];
+        carray = [c1, c2];
+        svg.append("text").attr("x",55).attr("y",50).attr("font-size", "20px").attr("font-weight", "bold").text("1. Input a screen-name.");
+        marker = svg.append("defs").append("marker")
+          .attr({
+            'id': "arrowhead",
+            'refX': 0,
+            'refY': 2,
+            'markerWidth': 4,
+            'markerHeight': 4,
+            'orient': "auto"
+          });
+        marker.append("path")
+            .attr({
+                d: "M 0,0 V 4 L4,2 Z",
+                fill: "black"
+            });
+        svg.append("text").attr("x",65).attr("y",75).attr("font-size", "20px").text("(@hoge => hoge)");
+        path = svg.append('path')
+            .attr({
+                'd': line(carray),
+                'stroke': 'black',
+                'stroke-width': 5,
+                'fill': 'none',
+                'marker-end':"url(#arrowhead)",
+        });
+        svg.append("text").attr("x",55).attr("y",100).attr("font-size", "20px").attr("font-weight", "bold").text("2. Click \"Search\".");
+        svg.append("def").append("filter").attr("id","selectionGlove");
+
+        alert(alartMseeage);
+    }
 
 });

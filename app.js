@@ -201,7 +201,6 @@ io.on('connection', function (socket) {
 
     socket.on("search friernds",function(data){
         searchCommonFriends(data,function(d){//dはname,screen_name,bioの配列
-            console.dir(d);
             socket.emit("Frirends response",d);
 
         });
@@ -259,6 +258,10 @@ function subSearch(subUserName, callback){//Rootユーザー以外のところ�
         var bio_obj = {};
         if(subFilterdArrey.length > 0){
             bio_search(subBioSearchArray,function(bioArray){
+                if(!bioArray){
+                    console.log("エラー:bioArray is null or undefined app.js line:263");
+                    return callback(subMentionArray,bio_obj);
+                }
                 for(var i = 0; i < bioArray.length; i++){
                     bio_obj[bioArray[i].screen_name] = {
                         name: bioArray[i].name,
@@ -377,11 +380,23 @@ function bio_search(screenNamesArray,callback){
         access_token: settings.ACCESS_TOKEN_KEY,
         access_token_secret: settings.ACCESS_TOKEN_SECRET
     });
-
+    //console.log(names_str);
     T.get('users/lookup',{screen_name: names_str},function(err, friendsObjects, response){
-        if(err){console.log(err);}
-        //console.log(friendsObjects[1+""]);
+
         var friendsArray = [];
+
+        if(err){
+            console.log(err);
+            console.log("エラー時のストリング"+names_str);
+            return callback(friendsArray);
+        }
+
+        if(!friendsObjects){
+            console.log("エラー:cannot find friendsObjects(app.js line:391)")
+            return callback(friendsArray);
+        }
+
+        //console.log(friendsObjects[1+""]);
 
         for(var l = 0; l < friendsObjects.length; l++){
             friendsArray.push({
@@ -393,7 +408,7 @@ function bio_search(screenNamesArray,callback){
                 isProtected: friendsObjects[l].protected
             });
         }
-        callback(friendsArray);
+        return callback(friendsArray);
     });
 
 }
