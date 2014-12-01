@@ -93,7 +93,7 @@ $(function(){
         prof_detail_html(data);
         //新しく表示したページ下まで自動スクロール
         var target_scroll = $('html, body');
-        target_scroll.animate({ scrollTop: 980 }, { duration: 2000, easing: 'swing', });
+        target_scroll.animate({ scrollTop: 830 }, { duration: 2000, easing: 'swing', });
     });
 
     //マウスオーバーした時参照するためのオブジェクト。プロフィールが格納されている。データ構造は以下
