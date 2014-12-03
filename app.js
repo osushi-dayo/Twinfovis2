@@ -6,9 +6,13 @@ var express = require('express')
 , tw = require('twit')
 , io = require('socket.io')(http);
 
+var MeCab = new require('mecab-async');
+var mecab = new MeCab();
+
 var settings = require('./settings.js');
 
 var app = express();
+
 
 app.configure(function(){
     app.set('port', process.env.PORT || 3000);
@@ -100,6 +104,10 @@ io.on('connection', function (socket) {
         var targetArray = [];//targetの名前を格納する配列["suigin","sayuri",...]
         var mentionArray = [];//[{sourc:hoge, target:fuga},{source:a, target:b}....]
 
+        var mecab_text = "";
+        var mecab_array = [];
+        var mecab_result = [];
+
         var T = new tw({
             consumer_key: settings.CONSUMER_KEY,
             consumer_secret: settings.CONSUMER_SECRET,
@@ -112,12 +120,45 @@ io.on('connection', function (socket) {
             //console.log(searchdata);
 
             for(var d in searchdata){
+                //mecab_text += searchdata[d].text;
                 if(searchdata[d].in_reply_to_screen_name != null){//特定の一人へのリプライなら
                     //console.log(searchdata[d + ""].text);
                     var targetName = searchdata[d].in_reply_to_screen_name;
                     targetArray.push(targetName);
                 }
             }
+            // mecab_text = mecab_text.replace(/@/g, " ");
+            // mecab.parse(mecab_text, function(err, result) {
+            //     if (err) throw err;
+            //     for(var i = 0; i < result.length; i++){
+            //         if(result[i][1] == "名詞" && result[i][0].length > 1){
+            //             mecab_array.push( result[i][0] );
+            //         }
+            //     }
+
+            //     mecab_array = mecab_array.filter(function (x, i, self) {
+            //         return self.indexOf(x) !== self.lastIndexOf(x);
+            //     });
+            //     //console.log(mecab_array);
+            //     for(var mi = 0; mi < mecab_array.length; mi++){
+            //         var mecab_counter = 0;
+            //         for(var mj = 0; mj < mecab_array.length; mj++){
+            //             if(mecab_array[mj] == mecab_array[mi]){
+            //                 mecab_counter++;
+            //                 mecab_array.splice(mj, 1);
+            //             }
+            //         }
+            //         //console.log(mi);
+            //         var s = mecab_array[mi];
+            //         mecab_result.push([ s, mecab_counter ]);
+            //     }
+            //     // result.forEach(function(element){
+            //     //     if (element[type] == '名詞') {
+            //     //         console.log(element[body]+",");
+            //     //     }
+            //     // });
+            //     console.log(mecab_result);
+            // });
             //重複だけ抜き出し([1,2,2,2,3,4,5,5,6,3,3]を[2,2,2,3,3,3,5,5]にする)
             var filterdArrey = targetArray.filter(function (x, i, self) {
                         return self.indexOf(x) !== self.lastIndexOf(x);

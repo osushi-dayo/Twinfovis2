@@ -70,13 +70,14 @@
     </table>
 
     <!-- マウスオーバー時のプロフィール表示用 -->
-    <div id="tooltip_div" style="position:absolute; left:1098px; top:80px; width:250px; height:400px;">
+    <div id="tooltip_div" style="position:absolute; left:1098px; top:120px; width:250px; height:400px;">
     </div>
     <div id="profile_detail"></div>
     <a id="scroll_top">ページTopへ</a>
 <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/javascripts/d3.js"></script>
+<script type="text/javascript" src="/javascripts/d3.layout.cloud.js"></script>
 <script type="text/javascript" src="/javascripts/makelist.js"></script>
 
 <!--ここからがd3-->
@@ -84,6 +85,7 @@
 var width = 1000;
 var height = 700;
 //var links = {};
+var color = d3.scale.category10();
 var tri = {};//三角形の情報を保持
 // Define 'div' for tooltips
 var div = d3.select("body")
@@ -119,9 +121,22 @@ var line = d3.svg.line()
     .x(function(d) {return d[0];})
     .y(function(d) {return d[1];});
 
+svg.append("circle")
+    .attr('transform',"translate(880,20)")
+    .attr('r', 10)
+    .attr('fill', "#6495ED");
+
+svg.append("circle")
+    .attr('transform',"translate(880,50)")
+    .attr('r', 10)
+    .attr('fill', "#000");
+
+svg.append("text").attr("x",900).attr("y",25).attr("font-size", "15px").attr("font-weight", "bold").text("normal");
+svg.append("text").attr("x",900).attr("y",55).attr("font-size", "15px").attr("font-weight", "bold").text("protected");
+
 //Usage1
-svg.append("text").attr("x",55).attr("y",50).attr("font-size", "20px").attr("font-weight", "bold").text("1. Input a screen-name.");
-svg.append("text").attr("x",65).attr("y",75).attr("font-size", "20px").text("(@hoge => hoge)");
+svg.append("text").attr('id', 'aaa').attr("x",55).attr("y",50).attr("font-size", "20px").attr("font-weight", "bold").text("1. Input a screen-name.");
+svg.append("text").attr('id', 'aaa').attr("x",65).attr("y",75).attr("font-size", "20px").text("(@hoge => hoge)");
 
 var path = svg.append('path')
     .attr({
@@ -136,8 +151,8 @@ svg.append("text").attr("x",55).attr("y",100).attr("font-size", "20px").attr("fo
 
 svg.append("def").append("filter").attr("id","selectionGlove");
 
-function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
-
+function renderNodes(links, isRoot, callback){//D3描画部分を全部関数化
+    svg.selectAll("#aaa").remove();
     svg.selectAll("*").remove();
     d3.select("#prof_table").remove();//検索時にもdetailも消す
     //二人目を検索したときにtargetの中身とhtmlがおかしくならないように
@@ -150,19 +165,37 @@ function renderNodes(links, isRoot ,callback){//D3描画部分を全部関数化
          .interpolate("interpolate");
 
     tri = {};
+    var num_of_tri = 0;
 
     for(key in triangle){
         //console.log(key);
         //console.log(triangle[key]);
         tri[key] = svg.append("g")
            .append("path")
-           .attr("fill","#fcc")
+           .attr('class', key)
+           .attr("fill",function(){return color(num_of_tri);})
            .attr("stroke", "black");
+
+        num_of_tri++;
     }
+
+
+    //凡例
+    svg.append("circle")
+        .attr('transform',"translate(880,20)")
+        .attr('r', 10)
+        .attr('fill', "#6495ED");
+    svg.append("circle")
+        .attr('transform',"translate(880,50)")
+        .attr('r', 10)
+        .attr('fill', "#000");
+    svg.append("text").attr("x",900).attr("y",25).attr("font-size", "15px").attr("font-weight", "bold").text("normal");
+    svg.append("text").attr("x",900).attr("y",55).attr("font-size", "15px").attr("font-weight", "bold").text("protected");
+
 
     //usage2
     c1 = [50, 75];
-    c2 = [30, 90];
+    c2 = [30, 90-10];
     carray = [c1, c2];
     marker = svg.append("defs").append("marker")
       .attr({
@@ -418,6 +451,10 @@ function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな�
     }
     d3.select("#prof_table").html(table_html);
 }
+
+
+
+
 
 function make_profcard(obj){ //ここで作成するcardを七並べみたいに並べていく感じかと思った
     var prof_html = "";
