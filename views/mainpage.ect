@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>TwitS</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/profcard.css' />
+    <style type="text/css">
+    .circle {
+        /*fill: #6495ED;*/
+        stroke: #fff;
+    }
+    .root_circle {
+        /*fill: #6495ED;*/
+        stroke: #fff;
+    }
+    .link {
+        fill: black;
+        stroke: #777;
+    }
+    div.tooltip {
+        position: absolute;
+        text-align: center;
+        width: 130px;
+        height: 80px;
+        padding: 2px;
+        font: 12px sans-serif;
+        background: "lightsteelblue";
+        border: 0px;
+        border-radius: 8px;
+    }
+    #loading {
+        width: 100px; /* gif画像の幅 */
+        height: 100px; /* gif画像の高さ */
+        margin: -75px 0 0 -75px; /* gif画像を画面中央に */
+        padding: 20px; /* gif画像を大きく */
+        background: #BABABA; /* gif画像の背景色 */
+        opacity: 0.9; /* 透過させる */
+        border-radius: 15px; /* 丸角 */
+        position: fixed; /* gif画像をスクロールさせない */
+        left: 50%; /* gif画像を画面横中央へ */
+        top: 50%; /* gif画像を画面縦中央へ */
+    }
+    </style>
+</head>
+<body>
+    <div id="back">
+    <h1 id="logo">Twitter × D3.js</h1>
+    <table id="main_table"height="600" width="1300" border="1" cellspacing="0">
+        <tr>
+            <td width="200" valign="top">
+                <table>
+                    <tr>
+                        <form>
+                            <input id="search_user" placeholder="user name" type="text" name="user_id" value=""/>
+                            <input id="search_submit" type="submit" src=" ./image/search1.jpg" height="30"align="top" value="search"/><!--imageもしたい-->
+                        </form><br>
+                    </tr>
+                    <tr>
+                        <p>Selected Accounts</p>
+                        <button id="make_list" href="#prof_detail">Find Common Friends!</button>
+                        <div id="accounts"></div>
+                    </tr>
+                </table>
+            </td>
+            <td width="1100" height="700" id="canvas">
+            </td><!--ここにsvgをはりつける-->
+        </tr>
+    </table>
+
+    <!-- マウスオーバー時のプロフィール表示用 -->
+    <div id="tooltip_div" style="position:absolute; left:1098px; top:120px; width:250px; height:400px;">
+    </div>
+    <div id="profile_detail"></div>
+    <a id="scroll_top">ページTopへ</a>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="/javascripts/d3.js"></script>
+<script type="text/javascript" src="/javascripts/d3.layout.cloud.js"></script>
+<script type="text/javascript" src="/javascripts/makelist.js"></script>
+
+<!--ここからがd3-->
+<script type="text/javascript">
+var width = 1000;
+var height = 700;
+//var links = {};
+var color = d3.scale.category10();
+var tri = {};//三角形の情報を保持
+// Define 'div' for tooltips
+var div = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+//Defining the SVG canvas
+var svg = d3.select("#canvas").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+//pointer
+var c1 = [50, 45];
+var c2 = [30, 30];
+var carray = [c1, c2];
+var marker = svg.append("defs").append("marker")
+  .attr({
+    'id': "arrowhead",
+    'refX': 0,
+    'refY': 2,
+    'markerWidth': 4,
+    'markerHeight': 4,
+    'orient': "auto"
+  });
+marker.append("path")
+    .attr({
+        d: "M 0,0 V 4 L4,2 Z",
+        fill: "black"
+    });
+var line = d3.svg.line()
+    .interpolate('basis')
+    .x(function(d) {return d[0];})
+    .y(function(d) {return d[1];});
+
+svg.append("circle")
+    .attr('transform',"translate(880,20)")
+    .attr('r', 10)
+    .attr('fill', "#6495ED");
+
+svg.append("circle")
+    .attr('transform',"translate(880,50)")
+    .attr('r', 10)
+    .attr('fill', "#000");
+
+svg.append("text").attr("x",900).attr("y",25).attr("font-size", "15px").attr("font-weight", "bold").text("normal");
+svg.append("text").attr("x",900).attr("y",55).attr("font-size", "15px").attr("font-weight", "bold").text("protected");
+
+//Usage1
+svg.append("text").attr('id', 'aaa').attr("x",55).attr("y",50).attr("font-size", "20px").attr("font-weight", "bold").text("1. Input a screen-name.");
+svg.append("text").attr('id', 'aaa').attr("x",65).attr("y",75).attr("font-size", "20px").text("(@hoge => hoge)");
+
+var path = svg.append('path')
+    .attr({
+        'd': line(carray),
+        'stroke': 'black',
+        'stroke-width': 5,
+        'fill': 'none',
+        'marker-end':"url(#arrowhead)",
+});
+
+svg.append("text").attr("x",55).attr("y",100).attr("font-size", "20px").attr("font-weight", "bold").text("2. Click \"Search\".");
+
+svg.append("def").append("filter").attr("id","selectionGlove");
+
+function renderNodes(links, isRoot, callback){//D3描画部分を全部関数化
+    svg.selectAll("#aaa").remove();
+    svg.selectAll("*").remove();
+    d3.select("#prof_table").remove();//検索時にもdetailも消す
+    //二人目を検索したときにtargetの中身とhtmlがおかしくならないように
+    target = [];
+    d3.select("#accounts").html("");
+
+    var line2 = d3.svg.line()
+         .x(function(d) { return d[0]; })
+         .y(function(d) { return d[1]; })
+         .interpolate("interpolate");
+
+    tri = {};
+    var num_of_tri = 0;
+
+    for(key in triangle){
+        //console.log(key);
+        //console.log(triangle[key]);
+        tri[key] = svg.append("g")
+           .append("path")
+           .attr('class', key)
+           .attr("fill",function(){return color(num_of_tri);})
+           .attr("stroke", "black");
+
+        num_of_tri++;
+    }
+
+
+    //凡例
+    svg.append("circle")
+        .attr('transform',"translate(880,20)")
+        .attr('r', 10)
+        .attr('fill', "#6495ED");
+    svg.append("circle")
+        .attr('transform',"translate(880,50)")
+        .attr('r', 10)
+        .attr('fill', "#000");
+    svg.append("text").attr("x",900).attr("y",25).attr("font-size", "15px").attr("font-weight", "bold").text("normal");
+    svg.append("text").attr("x",900).attr("y",55).attr("font-size", "15px").attr("font-weight", "bold").text("protected");
+
+
+    //usage2
+    c1 = [50, 75];
+    c2 = [30, 90-10];
+    carray = [c1, c2];
+    marker = svg.append("defs").append("marker")
+      .attr({
+        'id': "arrowhead",
+        'refX': 0,
+        'refY': 2,
+        'markerWidth': 4,
+        'markerHeight': 4,
+        'orient': "auto"
+      });
+    marker.append("path")
+        .attr({
+            d: "M 0,0 V 4 L4,2 Z",
+            fill: "black"
+        });
+    line = d3.svg.line()
+        .interpolate('basis')
+        .x(function(d) {return d[0];})
+        .y(function(d) {return d[1];});
+    path = svg.append('path')
+        .attr({
+            'd': line(carray),
+            'stroke': 'black',
+            'stroke-width': 5,
+            'fill': 'none',
+            'marker-end':"url(#arrowhead)",
+    });
+    svg.append("text").attr("x",55).attr("y",50).attr("font-size", "20px").attr("font-weight", "bold").text("3. Select 1~3 nodes.");
+    svg.append("text").attr("x",55).attr("y",75).attr("font-size", "20px").attr("font-weight", "bold").text("4. Click \"FindCommonFriends!\".");
+
+    var nodes = {};//nodesを初期化
+    //Defining nodes
+    links.forEach(function(link){
+        if(!(link.source in nodes)) {
+            nodes[link.source] = {name: link.source};
+            link.source = nodes[link.source];
+        } else {
+            link.source = nodes[link.source];
+        }
+        link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+    });
+
+    var force = d3.layout.force()
+        .nodes(d3.values(nodes))
+        .links(links)
+        .size([700, 600])
+        .linkDistance([100])
+        .linkStrength(0.9)//反発力最大(0~1)
+        .friction(0.9)
+        .gravity(0.1)
+        .charge([-1500])
+        .on("tick", tick)
+        .start();
+
+    var drag = force.drag()
+        .on("dragstart", dragstart);
+
+    var line = svg.selectAll('.link')
+        .data(force.links())
+        .enter()
+        .append('line')
+        .attr('class', "link")
+        .attr("stroke-width", function(d){
+            if(d.target.weight < 10){
+                return d.target.weight*0.3;
+            }else if(d.target.weight >= 10){
+                return 3;
+            }
+        });
+
+    var node = svg.selectAll('.node')
+        .data(force.nodes())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .call(force.drag);
+
+    node.append("circle")
+        .attr('data-target', function(d){
+            return d.name;
+        })
+        .attr("class", function(d){
+            if(d.name == root_name ){//rootの最初の一個
+                return "root_circle";
+            }else{
+                return "circle";
+            }
+        })
+        .attr("fixed", function(d){
+            if(d.name == root_name ){//rootの最初の一個
+                d.fixed = true;
+            }else{
+                d.fixed = false;
+            }
+        })
+        .attr('fill', function(d){
+            if(bio_objects[d.name] == undefined){
+                return "#6495ED";
+            }else if(bio_objects[d.name].isProtected){
+                return "#000";
+            }else{
+                return "#6495ED";
+            }
+
+        })
+        .attr("r", function(d){
+            if(d.name == root_name ){
+                return 20; // "d.index:0" means the root user.
+            }else{
+                return 10;
+            }
+        })
+        .on("click", function(d){///////////////////////////ADDED!!!!!!!
+            if(bio_objects[d.name] == undefined){
+                console.log("render err");
+            }else if(bio_objects[d.name].isProtected){//鍵垢はクリックイベント無視
+                return;
+            }
+            var flg = 0;
+            var dflg = -1;
+            var account_html = "";
+            for(var i = 0; i < target.length; i++){
+                if(d.name == target[i]){
+                    flg = 1;
+                    dflg = i;
+                }
+            }
+            if(target.length == 3 && dflg == -1){
+                flg = 2;
+                alert("指定するのは3人までにして欲しぃな...//");//アニメーションで出したらかっこいい
+            }
+            if(flg == 0){ //flg[0:target内に存在しない][1:target内に存在][2:4人目以上]
+                d3.select(this).style("fill", "#7FFF00");
+                target.push(d.name);
+            }else if(flg == 1){
+                d3.select(this).style("fill", "#6495ED");
+                target.splice(dflg, 1);
+            }
+            //今度はselectedAccounts用にhtmlを作成
+            if(target[0]){
+                for(var i = 0; i < target.length; i++){
+                    account_html += make_light_profcard(bio_objects[target[i]]);
+                }
+            }
+            d3.select("#accounts").html(account_html);
+            //console.log(target);
+        })//ツールチップ
+        .on("mouseover", function(d) {
+            //ノードの名前(screen_name)でbio_object内を検索。(bio_objects[d.name])
+            //bio_objects[d.name]はそのままツイッターのユーザーオブジェクトなのでmake_profcardでツールチップに表示。
+            var tooltip_html = make_profcard(bio_objects[d.name]);
+            d3.select("#tooltip_div").html(tooltip_html);
+        })
+        .on("mouseout",function(d){
+
+        });
+
+    if(isRoot){
+        d3.select("body")
+            .append("div")
+            .attr("id", "loading")
+            .append("img")
+            .attr("src","/images/loading.gif");
+    }
+
+    node.append("text")
+        .attr("x", 10)
+        .attr("dy", 10)
+        .attr("fill", "black")
+        .attr("font", "10px san-serif")
+        .text(function(d) {
+            return "@" + d.name;
+        });
+
+    // node.append("image")//Twitterにおいて重要な情報はなんといってもアイコンである
+    //     .attr({
+    //     'xlink:href': function (d) { return 'http://pbs.twimg.com/profile_images/2271138838/xa8s10w00lxh93apv936_normal.png'; },
+    //     'width': 30,
+    //     'height': 30
+    //     });
+
+    d3.select("#loading").remove();
+
+    //console.log(bio_objects);
+
+    function tick(e){ //rootノードをcenterに持ってくるために面倒なコードになっている
+
+
+        node.attr("transform", function(d) {
+            if(d.name==root_name ){
+                damper = 0.1;
+                d.x = d.x + (width/2 - d.x) * (damper + 0.71) * e.alpha;
+                d.y = d.y + (height/2 - d.y) * (damper + 0.71) * e.alpha;
+
+            }
+            if(d.start === true){
+                d.x = width/2;
+                d.y = height/2;
+                d.start = false;
+            }
+            r = d.name.length;
+            d.x = Math.max(r, Math.min(width - r, d.x));
+            d.y = Math.max(r, Math.min(height - r, d.y));
+
+
+            for(key in triangle){
+                //三角形を描画するためのオブジェクトが定義されていたら
+                if(tri[key] && nodes[key] && nodes[triangle[key]] && nodes[root_name]){
+                    tri[key].attr('d',function(){
+                        return "M" + nodes[root_name].x +  ","  + nodes[root_name].y
+                        + "L" + nodes[key].x + "," + nodes[key].y
+                        + "L" + nodes[ triangle[key] ].x  + "," + nodes[ triangle[key] ].y
+                        + "z";
+                    });
+                }
+            }
+
+
+            return "translate("+d.x+","+d.y+")";
+        });
+        line.attr({
+            'x1': function (d) { return d.source.x; },
+            'y1': function (d) { return d.source.y; },
+            'x2': function (d) { return d.target.x; },
+            'y2': function (d) { return d.target.y; }
+        });
+    }
+
+    return callback();
+}
+
+function prof_detail_html(commonFriendsData){ //ここに[{},{},{}]みたいな感じのを突っ込む
+    d3.select("#prof_table").remove();
+    var prof_table = d3.select("#profile_detail")
+        .append("table")
+        .attr("id", "prof_table")
+        .attr("width", "1250")
+        .attr("border",1)
+        .attr("cellspacing", 0);
+
+    var table_html = "<tr height=\"120px\">";
+    // var table_html = "";
+    for(var i = 0; i < commonFriendsData.length; i++){
+        table_html += "<td width=\"20\" valign=\"top\">";
+        table_html += make_profcard(commonFriendsData[i]);
+        table_html += "</td>";
+        if( i != 0 && i != commonFriendsData.length-1 && (i+1)%5 == 0){
+            table_html += "</tr><tr height=\"120px\">";
+        }
+        if(i == commonFriendsData.length-1){
+            table_html += "</tr>";
+        }
+    }
+    d3.select("#prof_table").html(table_html);
+}
+
+
+
+
+
+function make_profcard(obj){ //ここで作成するcardを七並べみたいに並べていく感じかと思った
+    var prof_html = "";
+    prof_html += "<div class=\"prf-card-inner\" height=\"100\%\">";
+    prof_html += "<a class=\"js-action-url\" target=\"_blank\" href=\"https:\/\/twitter.com\/"+obj.screen_name + "\">";
+    prof_html +=     "<span class=\"prf-img\">";
+    prof_html +=         "<img class=\"avatar\" src=\""+ obj.image_url +"\"></img>";
+    prof_html +=     "</span>";
+    prof_html +=     "<strong class=\"fullname\">";
+    prof_html +=         obj.name;
+    prof_html +=     "</strong>";
+    prof_html +=     "<p class=\"username\" text-align=\"center\">";
+    prof_html +=         "@" + obj.screen_name;
+    prof_html +=     "</p>";
+    prof_html += "</a>";
+    prof_html += "<p class=\"prf-bio\">";
+    prof_html +=   obj.bio;
+    prof_html += "</p>";
+    prof_html += "<p class=\"prf-location\">";
+    if(obj.location){
+        prof_html +=  "location : " + obj.location;
+    }
+    prof_html += "</p>";
+    prof_html += "</div>";
+    return prof_html;
+}
+
+function make_light_profcard(obj){
+    var prof_html = "";
+    prof_html += "<div class=\"prf-card-inner\" height=\"100\%\">";
+    prof_html += "<a class=\"js-action-url\" target=\"_blank\" href=\"https:\/\/twitter.com\/"+obj.screen_name + "\">";
+    prof_html +=     "<span class=\"prf-img\">";
+    prof_html +=         "<img class=\"avatar\" src=\""+ obj.image_url +"\"></img>";
+    prof_html +=     "</span>";
+    prof_html +=     "<strong class=\"fullname\">";
+    prof_html +=         obj.name;
+    prof_html +=     "</strong>";
+    prof_html +=     "<p class=\"username\" text-align=\"center\">";
+    prof_html +=         "@" + obj.screen_name;
+    prof_html +=     "</p>";
+    prof_html += "</a>";
+    prof_html += "</div>";
+    return prof_html;
+}
+
+function dragstart(d) {
+    //一旦固定外します
+    //d3.select(this).classed("fixed", d.fixed = true);
+}
+
+</script>
+</div>
+</body>
+</html>

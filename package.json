@@ -9,7 +9,7 @@
     "express": "3.*",
     "socket.io": "1.2.0",
     "fs": "*",
-    "ejs": "*",
+    "ect": "*",
     "mecab-async": "*",
     "path": "*",
     "url": "*",

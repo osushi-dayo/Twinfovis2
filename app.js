@@ -5,6 +5,7 @@ var express = require('express')
 , url = require('url')
 , bodyParser  = require('body-parser')
 , tw = require('twit')
+, ECT = require('ect')
 , io = require('socket.io')(http);
 
 var MeCab = new require('mecab-async');
@@ -20,7 +21,9 @@ if (app.get('env') === 'development'){
 
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
+//app.set('view engine', 'ejs');
+app.engine('ect', ECT({ watch: true, root: __dirname + '/views', ext: '.ect' }).render);
+app.set('view engine', 'ect');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
