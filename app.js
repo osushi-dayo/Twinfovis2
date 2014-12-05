@@ -3,6 +3,7 @@ var express = require('express')
 , path = require('path')
 , ntwitter = require('ntwitter')
 , url = require('url')
+, bodyParser  = require('body-parser')
 , tw = require('twit')
 , io = require('socket.io')(http);
 
@@ -13,24 +14,24 @@ var settings = require('./settings.js');
 
 var app = express();
 
+if (app.get('env') === 'development'){
+    console.log("あああ");
+}
 
-app.configure(function(){
-    app.set('port', process.env.PORT || 3000);
-    app.set('views', __dirname + '/views');
-    app.set('view engine', 'ejs');
-    app.use(express.favicon());
-    app.use(express.logger('dev'));
-    app.use(express.bodyParser());
-    app.use(express.methodOverride());
-    app.use(express.cookieParser('secretsession'));
-    app.use(express.session());
-    app.use(app.router);
-    app.use(express.static(path.join(__dirname, 'public')));
-});
+app.set('port', process.env.PORT || 3000);
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+app.use(express.favicon());
+app.use(express.logger('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+//app.use(express.bodyParser());
+//app.use(express.methodOverride());
+app.use(express.cookieParser('secretsession'));
+app.use(express.session({secret: 'secretfugafuga'}));
+app.use(app.router);
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.configure('development', function(){
-    app.use(express.errorHandler());
-});
 
 
 var server = http.createServer(app).listen(app.get('port'), function(){
@@ -38,9 +39,40 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 });
 var io = require('socket.io').listen(server);
 
-
+var testcounter = 0;
 app.get('/', function(req, res){
-  res.render('index');
+    if (req.session) {
+        console.log(req.session);
+    }
+    if(testcounter == 0){
+        req.session.user = {
+            user: "11",
+            pass: "111"
+        };
+    }else if(testcounter== 1){
+        req.session.user = {
+            user: "22",
+            pass: "222"
+        };
+    }else if(testcounter== 2){
+        req.session.user = {
+            user: "3",
+            pass: "3"
+        };
+    }else if(testcounter== 3){
+        req.session.user = {
+            user: "4",
+            pass: "4"
+        };
+    }else{
+        req.session.user = {
+            user: "5",
+            pass: "5"
+        };
+    }
+    testcounter++;
+
+    res.render('index');
 });
 
 app.get('/single', function(req, res){
